@@ -8,6 +8,9 @@ services:
 
     container_name: knowledgehub-api
 
+    environment:
+      ENV_FILE: .env.docker
+
     ports:
       - "8000:8000"
 
