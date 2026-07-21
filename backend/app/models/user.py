@@ -4,25 +4,26 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
 from app.db.mixins import TimestampMixin, UUIDMixin
+from app.core.constants import MAX_EMAIL_LENGTH, MAX_NAME_LENGTH, MAX_PASSWORD_HASH_LENGTH
 
 
 class User(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(
-        String(255),
+        String(MAX_EMAIL_LENGTH),
         unique=True,
         index=True,
         nullable=False,
     )
 
     hashed_password: Mapped[str] = mapped_column(
-        String(255),
+        String(MAX_PASSWORD_HASH_LENGTH),
         nullable=False,
     )
 
     full_name: Mapped[str | None] = mapped_column(
-        String(255),
+        String(MAX_NAME_LENGTH),
         nullable=True,
     )
 
