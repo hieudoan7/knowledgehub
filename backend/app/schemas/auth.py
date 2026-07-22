@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
 
 from app.core.constants import PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH, MAX_NAME_LENGTH
 

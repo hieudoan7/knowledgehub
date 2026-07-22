@@ -16,12 +16,12 @@ class UserRepository(BaseRepository):
         stmt = select(User).where(User.email == email)
 
         return self.session.scalar(stmt)
-
+    
     def create(self, user: User) -> User:
-        """Persist a new user."""
+        """Add a new user to the current session."""
 
         self.session.add(user)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(user)
 
         return user
