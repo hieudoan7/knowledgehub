@@ -1,5 +1,3 @@
-from sqlalchemy.orm import Session
-
 from app.core.security import hash_password, verify_password
 from app.exceptions.auth import (
     AuthenticationError,
@@ -32,7 +30,9 @@ class AuthService:
             full_name=request.full_name,
         )
 
-        self.user_repository.create(user)
+        _ = self.user_repository.create(user)
+        self.user_repository.session.commit()
+        self.user_repository.session.refresh(user)
 
         return user
 
