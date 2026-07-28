@@ -33,3 +33,9 @@ build/
 *.db
 
 time-counter
+
+# Editor swap files
+*.swp
+*.save
+*.bak
+

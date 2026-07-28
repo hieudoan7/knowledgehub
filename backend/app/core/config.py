@@ -12,9 +12,10 @@ class Settings(BaseSettings):
 
     debug: bool = False
 
-    database_url: str
-    secret_key: str
-    access_token_expire_minutes: int = 30
+    DATABASE_URL: str
+    SECRET_KEY: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ALGORITHM: str = "HS256"
 
     model_config = SettingsConfigDict(
         env_file=Path(ENV_FILE),

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import get_auth_service
+from app.core.security import create_access_token
 from app.exceptions.auth import (
     AuthenticationError,
     EmailAlreadyExistsError,
 )
-from app.schemas.auth import UserLogin, UserRegister
+from app.schemas.auth import UserLogin, UserRegister, TokenResponse
 from app.schemas.user import UserResponse
 from app.services.auth import AuthService
 
@@ -34,13 +35,14 @@ def register(
     return UserResponse.model_validate(user)
 
 
-@router.post("/login")
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+)
 def login(
     request: UserLogin,
     auth_service: AuthService = Depends(get_auth_service),
-):
-    """Authenticate a user."""
-
+) -> TokenResponse:
     try:
         user = auth_service.authenticate(request)
     except AuthenticationError as exc:
@@ -49,7 +51,10 @@ def login(
             detail="Invalid email or password.",
         ) from exc
 
-    return {
-        "message": "Login successful",
-        "user": UserResponse.model_validate(user),
-    }
+    access_token = create_access_token(
+        subject=str(user.id),
+    )
+
+    return TokenResponse(
+        access_token=access_token,
+    )

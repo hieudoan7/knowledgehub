@@ -7,7 +7,7 @@ from app.core.config import settings
 
 # Create a single SQLAlchemy engine for the application.
 engine = create_engine(
-    settings.database_url,
+    settings.DATABASE_URL,
     echo=settings.debug,
 )
 
