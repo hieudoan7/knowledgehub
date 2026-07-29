@@ -1,8 +1,4 @@
-from sqlalchemy.orm import DeclarativeBase
+from app.db.base_class import Base
 
-
-class Base(DeclarativeBase):
-    """Base class for all SQLAlchemy ORM models."""
-
-    pass
-
+# Import all ORM models here so SQLAlchemy registers them
+from app.models.user import User  # noqa: F401
