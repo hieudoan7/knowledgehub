@@ -1,3 +1,4 @@
+from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -9,6 +10,13 @@ class UserRepository(BaseRepository):
     """Repository for user-related database operations."""
 
     session: Session
+
+    def get_by_id(self, user_id: UUID) -> User | None:
+        """Retrieve a user by ID."""
+
+        stmt = select(User).where(User.id == user_id)
+
+        return self.session.scalar(stmt)
 
     def get_by_email(self, email: str) -> User | None:
         """Return a user by email, or None if not found."""

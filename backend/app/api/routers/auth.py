@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.deps import get_auth_service
 from app.core.security import create_access_token
@@ -45,6 +46,36 @@ def login(
 ) -> TokenResponse:
     try:
         user = auth_service.authenticate(request)
+    except AuthenticationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password.",
+        ) from exc
+
+    access_token = create_access_token(
+        subject=str(user.id),
+    )
+
+    return TokenResponse(
+        access_token=access_token,
+    )
+
+
+@router.post(
+    "/token",
+    response_model=TokenResponse,
+)
+def token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    auth_service: AuthService = Depends(get_auth_service),
+) -> TokenResponse:
+    try:
+        user = auth_service.authenticate(
+            UserLogin(
+                email=form_data.username,
+                password=form_data.password,
+            )
+        )
     except AuthenticationError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
