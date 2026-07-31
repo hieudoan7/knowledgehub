@@ -161,37 +161,30 @@ class DocumentService:
     
     def process_document(
         self,
-        document_id: UUID,
-    ) -> None:
-        """
-        Process an uploaded document.
-        """
-
-        document = self.document_repository.get_by_id(document_id)
-
-        if document is None:
-            raise ValueError("Document not found.")
-
+        document: Document,
+    ) -> Document:
         try:
             document.status = DocumentStatus.PROCESSING
             self.document_repository.update(document)
-
             self.session.commit()
 
             self.processing_service.process(document)
 
             document.status = DocumentStatus.READY
             self.document_repository.update(document)
-
             self.session.commit()
+
+            self.session.refresh(document)
+
+            return document
 
         except Exception:
             self.session.rollback()
 
             document.status = DocumentStatus.FAILED
             self.document_repository.update(document)
-
             self.session.commit()
 
+            self.session.refresh(document)
+
             raise
-        

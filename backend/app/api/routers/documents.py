@@ -144,3 +144,31 @@ def delete_document(
         )
 
     document_service.delete(document)
+
+
+@router.post(
+    "/{document_id}/process",
+    response_model=DocumentResponse,
+)
+def process_document(
+    document_id: UUID,
+    current_user: User = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service),
+) -> DocumentResponse:
+    """Process an uploaded document."""
+
+    document = document_service.get_user_document(
+        document_id=document_id,
+        owner_id=current_user.id,
+    )
+
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found.",
+        )
+
+    document = document_service.process_document(document)
+
+    return DocumentResponse.model_validate(document)
+
