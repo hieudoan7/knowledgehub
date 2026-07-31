@@ -1,7 +1,11 @@
-class UnsupportedFileTypeError(Exception):
-    """Raised when an uploaded file type is not supported."""
+class DocumentError(Exception):
+    """Base exception for document operations."""
 
 
-class FileTooLargeError(Exception):
-    """Raised when an uploaded file exceeds the size limit."""
+class UnsupportedFileTypeError(DocumentError):
+    """Raised when the uploaded file type is not supported."""
+
+
+class FileTooLargeError(DocumentError):
+    """Raised when the uploaded file exceeds the maximum allowed size."""
 

@@ -1,10 +1,14 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 
 from app.api.deps import (
     get_current_user,
     get_document_service,
+)
+from app.exceptions.document import (
+    FileTooLargeError,
+    UnsupportedFileTypeError,
 )
 from app.models.user import User
 from app.schemas.document import (
@@ -17,6 +21,41 @@ router = APIRouter(
     prefix="/documents",
     tags=["Documents"],
 )
+
+
+@router.post(
+    "/upload",
+    response_model=DocumentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service),
+) -> DocumentResponse:
+    """Upload a document."""
+
+    try:
+        document = document_service.upload(
+            owner_id=current_user.id,
+            original_filename=file.filename or "unknown",
+            mime_type=file.content_type or "",
+            content=await file.read(),
+        )
+
+    except UnsupportedFileTypeError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unsupported file type.",
+        )
+
+    except FileTooLargeError:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="File exceeds maximum allowed size.",
+        )
+
+    return DocumentResponse.model_validate(document)
 
 
 @router.post(

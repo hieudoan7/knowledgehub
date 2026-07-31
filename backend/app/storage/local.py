@@ -36,8 +36,7 @@ class LocalStorageService(StorageService):
     ) -> None:
         """Delete a file if it exists."""
 
-	file_path = self.upload_dir / storage_path
-
+        file_path = self.upload_dir / storage_path
         if file_path.exists():
             file_path.unlink()
 
@@ -47,7 +46,7 @@ class LocalStorageService(StorageService):
     ) -> bool:
         """Check whether a file exists."""
 
-	return (self.upload_dir / storage_path).exists()
+        return (self.upload_dir / storage_path).exists()
 
     def open(
         self,
@@ -55,4 +54,4 @@ class LocalStorageService(StorageService):
     ) -> Path:
         """Return the file path."""
 
-	return self.upload_dir / storage_path
+        return self.upload_dir / storage_path
