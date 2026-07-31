@@ -9,6 +9,7 @@ from app.exceptions.auth import InvalidTokenError
 from pwdlib import PasswordHash
 
 from app.core.config import settings
+from app.core.constants import ACCESS_TOKEN_TYPE, SUBJECT_CLAIM, TOKEN_TYPE_CLAIM
 
 
 # Configure the application's password hasher.
@@ -51,7 +52,8 @@ def create_access_token(
     expire = datetime.now(timezone.utc) + expires_delta
 
     payload = {
-        "sub": subject,
+        SUBJECT_CLAIM: subject,
+        TOKEN_TYPE_CLAIM: ACCESS_TOKEN_TYPE,
         "exp": expire,
     }
 

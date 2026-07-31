@@ -9,7 +9,10 @@ from app.db.session import get_db
 from app.models.user import User
 from app.repositories.user import UserRepository
 from app.services.auth import AuthService
+from app.repositories.document import DocumentRepository
+from app.services.document import DocumentService
 from app.exceptions.auth import InvalidTokenError
+from app.core.constants import ACCESS_TOKEN_TYPE, SUBJECT_CLAIM, TOKEN_TYPE_CLAIM
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/token",
@@ -46,7 +49,11 @@ def get_current_user(
 
     try:
         payload = decode_access_token(token)
-        subject = payload.get("sub")
+        token_type = payload.get(TOKEN_TYPE_CLAIM)
+        if token_type != ACCESS_TOKEN_TYPE:
+            raise credentials_exception
+
+        subject = payload.get(SUBJECT_CLAIM)
 
         if subject is None:
             raise credentials_exception
@@ -62,3 +69,24 @@ def get_current_user(
         raise credentials_exception
 
     return user
+
+
+# Document dependencies
+def get_document_repository(
+    db: Session = Depends(get_db),
+) -> DocumentRepository:
+    """Return a document repository instance."""
+
+    return DocumentRepository(db)
+
+
+def get_document_service(
+    db: Session = Depends(get_db),
+    document_repository: DocumentRepository = Depends(get_document_repository),
+) -> DocumentService:
+    """Return a document service instance."""
+
+    return DocumentService(
+        session=db,
+        document_repository=document_repository,
+    )

@@ -1,8 +1,8 @@
 from sqlalchemy import Boolean, String
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base
+from app.db.base_class import Base
 from app.db.mixins import TimestampMixin, UUIDMixin
 from app.core.constants import MAX_EMAIL_LENGTH, MAX_NAME_LENGTH, MAX_PASSWORD_HASH_LENGTH
 
@@ -37,4 +37,10 @@ class User(UUIDMixin, TimestampMixin, Base):
         Boolean,
         default=False,
         nullable=False,
+    )
+
+    documents = relationship(
+        "Document",
+        back_populates="owner",
+        cascade="all, delete-orphan",    
     )
