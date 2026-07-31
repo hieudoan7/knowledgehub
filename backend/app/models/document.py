@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
-from app.db.mixins import TimestampMixin  
+from app.db.mixins import TimestampMixin
 from app.models.enums import DocumentStatus
 
 
@@ -61,3 +61,9 @@ class Document(TimestampMixin, Base):
         "User",
         back_populates="documents",
     )
+
+    extracted_text: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+

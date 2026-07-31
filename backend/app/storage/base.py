@@ -37,11 +37,11 @@ class StorageService(Protocol):
         """
         ...
 
-    def open(
+    def read(
         self,
         storage_path: str,
-    ) -> Path:
+    ) -> bytes:
         """
-        Return the file path.
+        Read a file from storage.
         """
         ...

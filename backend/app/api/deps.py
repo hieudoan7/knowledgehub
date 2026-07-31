@@ -16,6 +16,7 @@ from app.repositories.document import DocumentRepository
 from app.services.document import DocumentService
 from app.exceptions.auth import InvalidTokenError
 from app.core.constants import ACCESS_TOKEN_TYPE, SUBJECT_CLAIM, TOKEN_TYPE_CLAIM
+from app.services.document_processing import DocumentProcessingService
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/token",
@@ -90,11 +91,20 @@ def get_storage_service() -> StorageService:
         upload_dir=settings.UPLOAD_DIR,
     )
 
+def get_document_processing_service(
+    storage_service: StorageService = Depends(get_storage_service),
+    document_repository: DocumentRepository = Depends(get_document_repository),
+) -> DocumentProcessingService:
+    return DocumentProcessingService(
+        storage_service=storage_service,
+        document_repository=document_repository,
+    )
 
 def get_document_service(
     db: Session = Depends(get_db),
     document_repository: DocumentRepository = Depends(get_document_repository),
-    storage_service: StorageService = Depends(get_storage_service)
+    storage_service: StorageService = Depends(get_storage_service),
+    processing_service: DocumentProcessingService = Depends(get_document_processing_service),
 ) -> DocumentService:
     """Return a document service instance."""
 
@@ -102,5 +112,6 @@ def get_document_service(
         session=db,
         document_repository=document_repository,
         storage_service=storage_service,
+        processing_service=processing_service,
     )
 

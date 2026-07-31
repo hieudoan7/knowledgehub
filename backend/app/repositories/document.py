@@ -18,7 +18,7 @@ class DocumentRepository(BaseRepository):
     def get_by_id(self, document_id: UUID) -> Document | None:
         stmt = select(Document).where(Document.id == document_id)
         return self.session.scalar(stmt)
-    
+
     def get_by_id_and_owner(
         self,
         document_id: UUID,
@@ -38,12 +38,12 @@ class DocumentRepository(BaseRepository):
         )
 
         return list(self.session.scalars(stmt))
-
+    
     def update(self, document: Document) -> Document:
+        self.session.add(document)
         self.session.flush()
         self.session.refresh(document)
         return document
 
     def delete(self, document: Document) -> None:
         self.session.delete(document)
-

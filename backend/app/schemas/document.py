@@ -38,6 +38,7 @@ class DocumentResponse(BaseModel):
     storage_path: str
 
     status: DocumentStatus
+    extracted_text: str | None = None
 
     created_at: datetime
     updated_at: datetime

@@ -48,10 +48,13 @@ class LocalStorageService(StorageService):
 
         return (self.upload_dir / storage_path).exists()
 
-    def open(
+    def read(
         self,
         storage_path: str,
-    ) -> Path:
-        """Return the file path."""
+    ) -> bytes:
+        """Read a file."""
 
-        return self.upload_dir / storage_path
+        file_path = self.upload_dir / storage_path
+
+        return file_path.read_bytes()
+

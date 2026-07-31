@@ -8,6 +8,7 @@ from app.models.enums import DocumentStatus
 from app.models.user import User
 from app.repositories.document import DocumentRepository
 from app.schemas.document import DocumentCreate
+from app.services.document_processing import DocumentProcessingService
 from app.exceptions.document import (
     FileTooLargeError,
     UnsupportedFileTypeError,
@@ -25,11 +26,13 @@ class DocumentService:
         self,
         session: Session,
         document_repository: DocumentRepository,
-        storage_service: StorageService
+        storage_service: StorageService,
+        processing_service: DocumentProcessingService,
     ) -> None:
         self.session = session
         self.document_repository = document_repository
         self.storage_service = storage_service
+        self.processing_service = processing_service
 
     def create(
         self,
@@ -97,8 +100,7 @@ class DocumentService:
         )
 
         try:
-            self.document_repository.create(document)
-
+            document = self.document_repository.create(document)
             self.session.commit()
             self.session.refresh(document)
 
@@ -143,3 +145,53 @@ class DocumentService:
         except Exception:
             self.session.rollback()
             raise
+    
+    def process(
+        self,
+        document: Document,
+    ) -> None:
+        try:
+            self.processing_service.extract_text(document)
+
+            self.session.commit()
+
+        except Exception:
+            self.session.rollback()
+            raise
+    
+    def process_document(
+        self,
+        document_id: UUID,
+    ) -> None:
+        """
+        Process an uploaded document.
+        """
+
+        document = self.document_repository.get_by_id(document_id)
+
+        if document is None:
+            raise ValueError("Document not found.")
+
+        try:
+            document.status = DocumentStatus.PROCESSING
+            self.document_repository.update(document)
+
+            self.session.commit()
+
+            self.processing_service.process(document)
+
+            document.status = DocumentStatus.READY
+            self.document_repository.update(document)
+
+            self.session.commit()
+
+        except Exception:
+            self.session.rollback()
+
+            document.status = DocumentStatus.FAILED
+            self.document_repository.update(document)
+
+            self.session.commit()
+
+            raise
+        
