@@ -178,3 +178,21 @@ The first milestone is setting up the project foundation with FastAPI, React, Po
 ## License
 
 MIT
+
+
+## Migration Flow
+# Generate a migration after changing models
+uv run alembic revision --autogenerate -m "describe your change"
+
+# Apply the latest migration
+uv run alembic upgrade head
+
+# Roll back one migration
+uv run alembic downgrade -1
+
+# Show current migration
+uv run alembic current
+
+# Show migration history
+uv run alembic history
+

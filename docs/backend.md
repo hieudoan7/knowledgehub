@@ -67,3 +67,10 @@ Background processing.
 ### Tests
 
 Unit and integration tests.
+
+
+## Repositories never commit transactions.
+
+Repositories perform persistence operations (add, delete, query, flush, refresh). 
+Services own the transaction boundary and are responsible for calling commit() 
+or rollback().
