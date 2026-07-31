@@ -2,6 +2,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.storage.base import StorageService
 from app.models.document import Document
 from app.models.enums import DocumentStatus
 from app.models.user import User
@@ -16,9 +17,11 @@ class DocumentService:
         self,
         session: Session,
         document_repository: DocumentRepository,
+        storage_service: StorageService
     ) -> None:
         self.session = session
         self.document_repository = document_repository
+        self.storage_service = storage_service
 
     def create(
         self,

@@ -5,6 +5,9 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_access_token
+from app.core.config import settings
+from app.storage.base import StorageService
+from app.storage.local import LocalStorageService
 from app.db.session import get_db
 from app.models.user import User
 from app.repositories.user import UserRepository
@@ -80,13 +83,24 @@ def get_document_repository(
     return DocumentRepository(db)
 
 
+def get_storage_service() -> StorageService:
+    """Return the configured storage service."""
+
+    return LocalStorageService(
+        upload_dir=settings.UPLOAD_DIR,
+    )
+
+
 def get_document_service(
     db: Session = Depends(get_db),
     document_repository: DocumentRepository = Depends(get_document_repository),
+    storage_service: StorageService = Depends(get_storage_service)
 ) -> DocumentService:
     """Return a document service instance."""
 
     return DocumentService(
         session=db,
         document_repository=document_repository,
+        storage_service=storage_service,
     )
+

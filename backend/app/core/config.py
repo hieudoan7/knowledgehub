@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ENV_FILE = os.getenv("ENV_FILE", ".env.local")
@@ -16,6 +17,10 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     ALGORITHM: str = "HS256"
+    UPLOAD_DIR: str = Field(
+        default="uploads",
+        description="Directory or storing uploaded files.",
+    )
 
     model_config = SettingsConfigDict(
         env_file=Path(ENV_FILE),
