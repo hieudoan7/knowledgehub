@@ -18,6 +18,10 @@ from app.services.document import DocumentService
 from app.exceptions.auth import InvalidTokenError
 from app.core.constants import ACCESS_TOKEN_TYPE, SUBJECT_CLAIM, TOKEN_TYPE_CLAIM
 from app.services.document_processing import DocumentProcessingService
+from app.embeddings.base import EmbeddingService
+from app.embeddings.factory import get_embedding_service
+from app.services.search import SearchService
+
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/token",
@@ -103,11 +107,13 @@ def get_document_processing_service(
     storage_service: StorageService = Depends(get_storage_service),
     document_repository: DocumentRepository = Depends(get_document_repository),
     document_chunk_repository: DocumentChunkRepository = Depends(get_document_chunk_repository,),
+    embedding_service: EmbeddingService = Depends(get_embedding_service),
 ) -> DocumentProcessingService:
     return DocumentProcessingService(
         storage_service=storage_service,
         document_repository=document_repository,
 	    document_chunk_repository=document_chunk_repository,
+        embedding_service=embedding_service,
     )
 
 def get_document_service(
@@ -124,3 +130,21 @@ def get_document_service(
         storage_service=storage_service,
         processing_service=processing_service,
     )
+
+def get_embeddings() -> EmbeddingService:
+    return get_embedding_service()
+
+def get_search_service(
+    document_chunk_repository: DocumentChunkRepository = Depends(
+        get_document_chunk_repository,
+    ),
+) -> SearchService:
+    """Return a search service."""
+
+    embedding_service: EmbeddingService = get_embedding_service()
+
+    return SearchService(
+        embedding_service=embedding_service,
+        document_chunk_repository=document_chunk_repository,
+    )
+    

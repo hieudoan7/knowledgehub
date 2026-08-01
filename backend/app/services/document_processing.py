@@ -6,6 +6,7 @@ from app.repositories.document_chunk import DocumentChunkRepository
 from app.storage.base import StorageService
 from app.models.document_chunk import DocumentChunk
 from app.utils.text import split_text
+from app.embeddings.base import EmbeddingService
 
 class DocumentProcessingService:
     """Handle document processing."""
@@ -15,10 +16,12 @@ class DocumentProcessingService:
         storage_service: StorageService,
         document_repository: DocumentRepository,
 	    document_chunk_repository: DocumentChunkRepository,
+        embedding_service: EmbeddingService,
     ) -> None:
         self.storage_service = storage_service
         self.document_repository = document_repository
         self.document_chunk_repository = document_chunk_repository
+        self.embedding_service = embedding_service
 
     def process(
         self,
@@ -56,11 +59,13 @@ class DocumentProcessingService:
         chunks = split_text(text)
 
         for index, chunk_text in enumerate(chunks):
+            embedding = self.embedding_service.embed(chunk_text)
             chunk = DocumentChunk(
-            id=uuid4(),
-	        document_id=document.id,
+                id=uuid4(),
+	            document_id=document.id,
                 chunk_index=index,
                 content=chunk_text,
+                embedding=embedding,
             )
 
             self.document_chunk_repository.create(chunk)

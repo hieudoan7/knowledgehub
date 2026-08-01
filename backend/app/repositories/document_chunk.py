@@ -3,6 +3,7 @@ from sqlalchemy import select, delete
 
 from app.models.document_chunk import DocumentChunk
 from app.repositories.base import BaseRepository
+from app.services.search_result import SearchResult
 
 
 class DocumentChunkRepository(BaseRepository):
@@ -40,3 +41,40 @@ class DocumentChunkRepository(BaseRepository):
         )
 
         self.session.execute(stmt)
+    
+    def similarity_search(
+        self,
+        *,
+        document_id: UUID,
+        embedding: list[float],
+        limit: int = 5,
+    ) -> list[SearchResult]:
+        """
+        Return the most similar chunks for a document.
+        """
+
+        distance = DocumentChunk.embedding.cosine_distance(
+            embedding,
+        ).label("distance")
+
+        stmt = (
+            select(
+                DocumentChunk,
+                distance,
+            )
+            .where(
+                DocumentChunk.document_id == document_id,
+            )
+            .order_by(distance)
+            .limit(limit)
+        )
+
+        rows = self.session.execute(stmt).all()
+
+        return [
+            SearchResult(
+                chunk=chunk,
+                score=1 - distance,
+            )
+            for chunk, distance in rows
+        ]
