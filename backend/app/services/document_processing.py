@@ -1,8 +1,11 @@
+from uuid import uuid4
 from app.models.document import Document
 from app.processors.factory import ProcessorFactory
 from app.repositories.document import DocumentRepository
+from app.repositories.document_chunk import DocumentChunkRepository
 from app.storage.base import StorageService
-
+from app.models.document_chunk import DocumentChunk
+from app.utils.text import split_text
 
 class DocumentProcessingService:
     """Handle document processing."""
@@ -11,9 +14,11 @@ class DocumentProcessingService:
         self,
         storage_service: StorageService,
         document_repository: DocumentRepository,
+	    document_chunk_repository: DocumentChunkRepository,
     ) -> None:
         self.storage_service = storage_service
         self.document_repository = document_repository
+        self.document_chunk_repository = document_chunk_repository
 
     def process(
         self,
@@ -45,4 +50,17 @@ class DocumentProcessingService:
         document.extracted_text = text
 
         self.document_repository.update(document)
+        self.document_chunk_repository.delete_by_document(
+            document.id,
+        )
+        chunks = split_text(text)
 
+        for index, chunk_text in enumerate(chunks):
+            chunk = DocumentChunk(
+            id=uuid4(),
+	        document_id=document.id,
+                chunk_index=index,
+                content=chunk_text,
+            )
+
+            self.document_chunk_repository.create(chunk)

@@ -13,6 +13,7 @@ from app.models.user import User
 from app.repositories.user import UserRepository
 from app.services.auth import AuthService
 from app.repositories.document import DocumentRepository
+from app.repositories.document_chunk import DocumentChunkRepository
 from app.services.document import DocumentService
 from app.exceptions.auth import InvalidTokenError
 from app.core.constants import ACCESS_TOKEN_TYPE, SUBJECT_CLAIM, TOKEN_TYPE_CLAIM
@@ -91,13 +92,22 @@ def get_storage_service() -> StorageService:
         upload_dir=settings.UPLOAD_DIR,
     )
 
+def get_document_chunk_repository(
+    db: Session = Depends(get_db),
+) -> DocumentChunkRepository:
+    """Return a document chunk repository."""
+
+    return DocumentChunkRepository(db)
+
 def get_document_processing_service(
     storage_service: StorageService = Depends(get_storage_service),
     document_repository: DocumentRepository = Depends(get_document_repository),
+    document_chunk_repository: DocumentChunkRepository = Depends(get_document_chunk_repository,),
 ) -> DocumentProcessingService:
     return DocumentProcessingService(
         storage_service=storage_service,
         document_repository=document_repository,
+	    document_chunk_repository=document_chunk_repository,
     )
 
 def get_document_service(
@@ -114,4 +124,3 @@ def get_document_service(
         storage_service=storage_service,
         processing_service=processing_service,
     )
-

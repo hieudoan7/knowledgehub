@@ -67,3 +67,8 @@ class Document(TimestampMixin, Base):
         nullable=True,
     )
 
+    chunks = relationship(
+        "DocumentChunk",
+        back_populates="document",
+        cascade="all, delete-orphan",
+    )
