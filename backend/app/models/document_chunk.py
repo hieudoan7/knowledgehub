@@ -2,6 +2,7 @@ from uuid import UUID
 
 from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from pgvector.sqlalchemy import Vector
 
 from app.db.base_class import Base
 from app.db.mixins import TimestampMixin
@@ -27,6 +28,11 @@ class DocumentChunk(Base, TimestampMixin):
     content: Mapped[str] = mapped_column(
         Text,
         nullable=False,
+    )
+
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(384),
+        nullable=True,
     )
 
     document = relationship(
