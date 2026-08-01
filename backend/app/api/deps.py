@@ -21,6 +21,8 @@ from app.services.document_processing import DocumentProcessingService
 from app.embeddings.base import EmbeddingService
 from app.embeddings.factory import get_embedding_service
 from app.services.search import SearchService
+from app.llm.base import LLMService
+from app.llm.factory import get_llm_service
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -147,4 +149,8 @@ def get_search_service(
         embedding_service=embedding_service,
         document_chunk_repository=document_chunk_repository,
     )
-    
+
+def get_llm_dependency() -> LLMService:
+    """Return the configured LLM service."""
+
+    return get_llm_service()

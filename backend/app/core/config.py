@@ -21,6 +21,9 @@ class Settings(BaseSettings):
         default="uploads",
         description="Directory or storing uploaded files.",
     )
+    LLM_PROVIDER: str = "ollama"
+    LLM_MODEL: str = "mistral:latest"
+    OLLAMA_HOST: str = "http://localhost:11434"
 
     model_config = SettingsConfigDict(
         env_file=Path(ENV_FILE),
