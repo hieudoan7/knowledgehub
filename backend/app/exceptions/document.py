@@ -9,6 +9,7 @@ class UnsupportedFileTypeError(DocumentError):
 class FileTooLargeError(DocumentError):
     """Raised when the uploaded file exceeds the maximum allowed size."""
 
+
 class DocumentNotFoundError(DocumentError):
-    """Raised when document not found."""
-    
+    def __init__(self, document_id):
+        super().__init__(f"Document '{document_id}' not found.")

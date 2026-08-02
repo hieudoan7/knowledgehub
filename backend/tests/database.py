@@ -4,13 +4,9 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.base import Base
 
-DATABASE_URL = "sqlite://"
+TEST_DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/knowledgehub_test"
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+engine = create_engine(TEST_DATABASE_URL)
 
 TestingSessionLocal = sessionmaker(
     bind=engine,

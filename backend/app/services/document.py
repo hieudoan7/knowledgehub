@@ -123,10 +123,18 @@ class DocumentService:
         self,
         document_id: UUID,
         owner_id: UUID,
-    ) -> Document | None:
+    ) -> Document:
         """Retrieve a document by its ID and owner."""
+        document = self.document_repository.get_by_id_and_owner(
+            document_id,
+            owner_id,
+        )
 
-        return self.document_repository.get_by_id_and_owner(document_id, owner_id)
+        if document is None:
+            raise DocumentNotFoundError(document_id)
+
+        return document
+
 
     def list_by_owner(
         self,

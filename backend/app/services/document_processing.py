@@ -49,21 +49,24 @@ class DocumentProcessingService:
             raise ValueError(f"Document '{document_id}' not found.")
 
         try:
+            print("1. Document loaded")
             # Update status
             document.status = DocumentStatus.PROCESSING
+            print("2. Status -> PROCESSING")
             self.document_repository.update(document)
 
             # Read file
             content = self.storage_service.read(
                 document.storage_path,
             )
-
+            print("3. File read")
             # Extract text
             processor = ProcessorFactory.get(
                 document.mime_type,
             )
+            print("4. Processor created")
             text = processor.extract(content)
-
+            print(f"5. Extracted {len(text)} chars")
             # Save extracted text
             document.extracted_text = text
             self.document_repository.update(document)
@@ -74,10 +77,11 @@ class DocumentProcessingService:
             )
 
             chunks = split_text(text)
+            print(f"6. {len(chunks)} chunks created")
 
             for index, chunk_text in enumerate(chunks):
                 embedding = self.embedding_service.embed(chunk_text)
-
+                print(f"7. Embedded chunk {index}")
                 self.document_chunk_repository.create(
                     DocumentChunk(
                         id=uuid4(),
@@ -90,12 +94,15 @@ class DocumentProcessingService:
 
             # Finished successfully
             document.status = DocumentStatus.READY
+            print("8. Status -> READY")
             self.document_repository.update(document)
 
             session.commit()
+            print("9. Commit complete")
 
-        except Exception:
+        except Exception as e:
             session.rollback()
+            print("ERROR:", repr(e))
 
             # Use a new transaction to record the failure.
             document = self.document_repository.get_by_id(document_id)

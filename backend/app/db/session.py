@@ -12,7 +12,7 @@ engine = create_engine(
 )
 
 # Factory for creating new database sessions.
-SessionLocal = sessionmaker(
+SessionLocal: sessionmaker[Session] = sessionmaker(
     bind=engine,
     autoflush=False,
     autocommit=False,

@@ -208,12 +208,6 @@ def search_document(
         owner_id=current_user.id,
     )
 
-    if document is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Document not found.",
-        )
-
     results = search_service.search(
         document_id=document.id,
         query=request.query,
@@ -248,12 +242,6 @@ def chat_document(
         document_id=document_id,
         owner_id=current_user.id,
     )
-
-    if document is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Document not found.",
-        )
 
     return chat_service.chat(
         document_id=document.id,
