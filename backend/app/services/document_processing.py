@@ -9,6 +9,7 @@ from app.models.document_chunk import DocumentChunk
 from app.utils.text import split_text
 from app.embeddings.base import EmbeddingService
 from app.models.enums import DocumentStatus
+from app.core.config import settings
 
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,11 @@ class DocumentProcessingService:
                 document.id,
             )
 
-            chunks = split_text(text)
+            chunks = split_text(
+                text,
+                chunk_size=settings.CHUNK_SIZE,
+                overlap_sentences=settings.CHUNK_OVERLAP_SENTENCES,
+            )
 
             for index, chunk_text in enumerate(chunks):
                 embedding = self.embedding_service.embed(chunk_text)

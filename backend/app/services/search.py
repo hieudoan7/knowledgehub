@@ -5,6 +5,7 @@ from app.models.document_chunk import DocumentChunk
 from app.repositories.document_chunk import DocumentChunkRepository
 from app.services.search_result import SearchResult
 from app.services.retrieval import RetrievalContext
+from app.core.config import settings
 
 
 class SearchService:
@@ -50,7 +51,7 @@ class SearchService:
         *,
         document_id: UUID,
         query: str,
-        limit: int = 5,
+        limit: int = settings.RETRIEVAL_LIMIT,
     ) -> RetrievalContext:
         """
         Retrieve relevant context for a query.

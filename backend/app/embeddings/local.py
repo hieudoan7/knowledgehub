@@ -1,6 +1,7 @@
 from sentence_transformers import SentenceTransformer
 
 from app.embeddings.base import EmbeddingService
+from app.core.config import settings
 
 
 class LocalEmbeddingService(EmbeddingService):
@@ -8,7 +9,7 @@ class LocalEmbeddingService(EmbeddingService):
 
     def __init__(
         self,
-        model_name: str = "BAAI/bge-small-en-v1.5",
+        model_name: str = settings.EMBEDDING_MODEL,
     ) -> None:
         self.model = SentenceTransformer(model_name)
 

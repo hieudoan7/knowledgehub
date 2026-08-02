@@ -1,8 +1,9 @@
 from pathlib import Path
 from uuid import uuid4
+from app.core.config import settings
 
 
-MAX_FILE_SIZE = 10 * 1024 * 1024
+MAX_FILE_SIZE = settings.MAX_UPLOAD_SIZE
 ALLOWED_MIME_TYPES = {
     "application/pdf",
     "text/plain",

@@ -7,8 +7,8 @@ _SENTENCE_PATTERN = re.compile(r"(?<=[.!?])\s+")
 def split_text(
     text: str,
     *,
-    chunk_size: int = 500,
-    overlap_sentences: int = 1,
+    chunk_size: int,
+    overlap_sentences: int,
 ) -> list[str]:
     """
     Split text into sentence-aware overlapping chunks.
