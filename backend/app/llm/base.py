@@ -1,4 +1,5 @@
 from typing import Protocol
+from app.llm.message import ChatMessage
 
 
 class LLMService(Protocol):
@@ -7,7 +8,7 @@ class LLMService(Protocol):
     def generate(
         self,
         *,
-        messages: list[dict[str, str]],
+        messages: list[ChatMessage],
     ) -> str:
         """
         Generate a response from a conversation.

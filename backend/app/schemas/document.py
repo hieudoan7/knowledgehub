@@ -42,3 +42,9 @@ class DocumentResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+
+class DocumentStatusResponse(BaseModel):
+    id: UUID
+    status: DocumentStatus
+

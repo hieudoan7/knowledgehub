@@ -11,6 +11,7 @@ from app.schemas.document import DocumentCreate
 from app.exceptions.document import (
     FileTooLargeError,
     UnsupportedFileTypeError,
+    DocumentNotFoundError
 )
 from app.utils.file import (
     ALLOWED_MIME_TYPES,
@@ -176,3 +177,19 @@ class DocumentService:
             self.session.refresh(document)
 
             raise
+
+
+    def get_status(
+        self,
+        document_id: UUID,
+        owner_id: UUID,
+    ) -> Document:
+        document = self.get_user_document(
+            document_id,
+            owner_id,
+        )
+
+        if document is None:
+            raise DocumentNotFoundError(document_id)
+
+        return document

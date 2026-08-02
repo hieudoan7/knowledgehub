@@ -16,6 +16,7 @@ from app.models.user import User
 from app.schemas.document import (
     DocumentCreate,
     DocumentResponse,
+    DocumentStatusResponse,
 )
 from app.schemas.search import (
     SearchRequest,
@@ -259,3 +260,21 @@ def chat_document(
         question=request.question,
     )
 
+@router.get(
+    "/{document_id}/status",
+    response_model=DocumentStatusResponse,
+)
+def get_document_status(
+    document_id: UUID,
+    current_user: User = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service),
+):
+    document = document_service.get_status(
+        document_id=document_id,
+        owner_id=current_user.id,
+    )
+
+    return DocumentStatusResponse(
+        id=document.id,
+        status=document.status,
+    )

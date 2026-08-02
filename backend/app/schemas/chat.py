@@ -6,6 +6,7 @@ class ChatRequest(BaseModel):
         min_length=1,
     )
 
+
 class ChatSource(BaseModel):
     chunk_index: int
     score: float

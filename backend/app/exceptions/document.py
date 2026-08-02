@@ -9,3 +9,6 @@ class UnsupportedFileTypeError(DocumentError):
 class FileTooLargeError(DocumentError):
     """Raised when the uploaded file exceeds the maximum allowed size."""
 
+class DocumentNotFoundError(DocumentError):
+    """Raised when document not found."""
+    
