@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from app.llm.base import LLMService
@@ -8,6 +9,9 @@ from app.schemas.chat import (
     ChatSource,
 )
 from app.prompts.rag import build_rag_messages
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChatService:
@@ -44,9 +48,11 @@ class ChatService:
         answer = self.llm_service.generate(
             messages=messages,
         )
-        print("=" * 80, flush=True)
-        print(context.text, flush=True)
-        print("=" * 80, flush=True)
+        
+        logger.debug(
+            "Retrieval context:\n%s",
+            context,
+        )
 
         return ChatResponse(
             answer=answer,

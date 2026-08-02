@@ -1,3 +1,4 @@
+import logging
 from typing import ClassVar
 from uuid import UUID
 
@@ -11,6 +12,8 @@ from app.services.document_processing import DocumentProcessingService
 from app.embeddings.local import LocalEmbeddingService
 from app.storage.local import LocalStorageService
 
+
+logger = logging.getLogger(__name__)
 
 class BackgroundTaskService:
     """Execute long-running background tasks."""
@@ -31,7 +34,7 @@ class BackgroundTaskService:
                 embedding_service=LocalEmbeddingService(),
                 storage_service=LocalStorageService(upload_dir=settings.UPLOAD_DIR),
             )
-            print(">>> Background task started", flush=True)
+            logger.info("Background task started")
             processing_service.process(document_id)
 
         finally:

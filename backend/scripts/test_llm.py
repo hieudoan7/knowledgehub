@@ -27,10 +27,6 @@ def main() -> None:
 
     answer = llm.generate(messages=messages)
 
-    print("=" * 60)
-    print(answer)
-    print("=" * 60)
-
 
 if __name__ == "__main__":
     main()

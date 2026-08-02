@@ -39,8 +39,6 @@ def processed_document(
         f"/api/v1/documents/{document['id']}",
         headers=auth_headers,
     )
-    print(response.status_code)
-    print(response.json())
 
     assert response.status_code == 200
 
