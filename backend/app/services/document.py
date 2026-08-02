@@ -2,13 +2,12 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from fastapi import BackgroundTasks
 from app.storage.base import StorageService
 from app.models.document import Document
 from app.models.enums import DocumentStatus
-from app.models.user import User
 from app.repositories.document import DocumentRepository
 from app.schemas.document import DocumentCreate
-from app.services.document_processing import DocumentProcessingService
 from app.exceptions.document import (
     FileTooLargeError,
     UnsupportedFileTypeError,
@@ -18,6 +17,7 @@ from app.utils.file import (
     MAX_FILE_SIZE,
     generate_stored_filename,
 )
+from app.services.background_tasks import BackgroundTaskService
 
 class DocumentService:
     """Business logic for document management."""
@@ -27,12 +27,10 @@ class DocumentService:
         session: Session,
         document_repository: DocumentRepository,
         storage_service: StorageService,
-        processing_service: DocumentProcessingService,
     ) -> None:
         self.session = session
         self.document_repository = document_repository
         self.storage_service = storage_service
-        self.processing_service = processing_service
 
     def create(
         self,
@@ -69,6 +67,7 @@ class DocumentService:
         original_filename: str,
         mime_type: str,
         content: bytes,
+        background_tasks: BackgroundTasks,
     ) -> Document:
         """
         Upload a new document.
@@ -103,6 +102,10 @@ class DocumentService:
             document = self.document_repository.create(document)
             self.session.commit()
             self.session.refresh(document)
+            background_tasks.add_task(
+                BackgroundTaskService.process_document,
+                document.id,
+            )
 
             return document
 
@@ -146,19 +149,6 @@ class DocumentService:
             self.session.rollback()
             raise
     
-    def process(
-        self,
-        document: Document,
-    ) -> None:
-        try:
-            self.processing_service.extract_text(document)
-
-            self.session.commit()
-
-        except Exception:
-            self.session.rollback()
-            raise
-    
     def process_document(
         self,
         document: Document,
@@ -167,8 +157,6 @@ class DocumentService:
             document.status = DocumentStatus.PROCESSING
             self.document_repository.update(document)
             self.session.commit()
-
-            self.processing_service.process(document)
 
             document.status = DocumentStatus.READY
             self.document_repository.update(document)

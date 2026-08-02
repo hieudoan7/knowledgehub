@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 from app.models.document import Document
 from app.processors.factory import ProcessorFactory
 from app.repositories.document import DocumentRepository
@@ -7,6 +7,7 @@ from app.storage.base import StorageService
 from app.models.document_chunk import DocumentChunk
 from app.utils.text import split_text
 from app.embeddings.base import EmbeddingService
+from app.models.enums import DocumentStatus
 
 class DocumentProcessingService:
     """Handle document processing."""
@@ -25,47 +26,83 @@ class DocumentProcessingService:
 
     def process(
         self,
-        document: Document,
+        document_id: UUID,
     ) -> None:
         """
         Process a document.
 
-        Current pipeline:
-            1. Read file
-            2. Extract text
-
-        Future pipeline:
-            3. Chunk
-            4. Embedding
-            5. Summary
+        Pipeline:
+            1. Load document
+            2. Mark as processing
+            3. Read file
+            4. Extract text
+            5. Split into chunks
+            6. Generate embeddings
+            7. Save chunks
+            8. Mark document as ready
         """
 
-        content = self.storage_service.read(
-            document.storage_path,
-        )
+        session = self.document_repository.session
 
-        processor = ProcessorFactory.get(
-            document.mime_type,
-        )
+        document = self.document_repository.get_by_id(document_id)
+        if document is None:
+            raise ValueError(f"Document '{document_id}' not found.")
 
-        text = processor.extract(content)
+        try:
+            # Update status
+            document.status = DocumentStatus.PROCESSING
+            self.document_repository.update(document)
 
-        document.extracted_text = text
-
-        self.document_repository.update(document)
-        self.document_chunk_repository.delete_by_document(
-            document.id,
-        )
-        chunks = split_text(text)
-
-        for index, chunk_text in enumerate(chunks):
-            embedding = self.embedding_service.embed(chunk_text)
-            chunk = DocumentChunk(
-                id=uuid4(),
-	            document_id=document.id,
-                chunk_index=index,
-                content=chunk_text,
-                embedding=embedding,
+            # Read file
+            content = self.storage_service.read(
+                document.storage_path,
             )
 
-            self.document_chunk_repository.create(chunk)
+            # Extract text
+            processor = ProcessorFactory.get(
+                document.mime_type,
+            )
+            text = processor.extract(content)
+
+            # Save extracted text
+            document.extracted_text = text
+            self.document_repository.update(document)
+
+            # Rebuild chunks
+            self.document_chunk_repository.delete_by_document(
+                document.id,
+            )
+
+            chunks = split_text(text)
+
+            for index, chunk_text in enumerate(chunks):
+                embedding = self.embedding_service.embed(chunk_text)
+
+                self.document_chunk_repository.create(
+                    DocumentChunk(
+                        id=uuid4(),
+                        document_id=document.id,
+                        chunk_index=index,
+                        content=chunk_text,
+                        embedding=embedding,
+                    )
+                )
+
+            # Finished successfully
+            document.status = DocumentStatus.READY
+            self.document_repository.update(document)
+
+            session.commit()
+
+        except Exception:
+            session.rollback()
+
+            # Use a new transaction to record the failure.
+            document = self.document_repository.get_by_id(document_id)
+            if document is not None:
+                document.status = DocumentStatus.FAILED
+                self.document_repository.update(document)
+                session.commit()
+
+            raise
+        

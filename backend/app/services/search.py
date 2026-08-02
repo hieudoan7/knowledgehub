@@ -61,6 +61,11 @@ class SearchService:
             query=query,
             limit=limit,
         )
+        results = [
+            result
+            for result in results
+            if result.score >= 0.55
+        ]
 
         return RetrievalContext(
             results=results,

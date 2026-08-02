@@ -7,6 +7,7 @@ from app.schemas.chat import (
     ChatResponse,
     ChatSource,
 )
+from app.prompts.rag import build_rag_messages
 
 
 class ChatService:
@@ -35,7 +36,7 @@ class ChatService:
             query=question,
         )
 
-        messages = self._build_messages(
+        messages = build_rag_messages(
             question=question,
             context=context.text,
         )
@@ -43,6 +44,9 @@ class ChatService:
         answer = self.llm_service.generate(
             messages=messages,
         )
+        print("=" * 80, flush=True)
+        print(context.text, flush=True)
+        print("=" * 80, flush=True)
 
         return ChatResponse(
             answer=answer,
@@ -54,33 +58,3 @@ class ChatService:
                 for result in context.sources
             ],
         )
-
-    @staticmethod
-    def _build_messages(
-        *,
-        question: str,
-        context: str,
-    ) -> list[ChatMessage]:
-        """
-        Build messages sent to the LLM.
-        """
-
-        return [
-            ChatMessage(
-                role="system",
-                content=(
-                    "You are a helpful AI assistant.\n\n"
-                    "Answer ONLY using the supplied context.\n"
-                    "If the answer cannot be found in the context, "
-                    "reply with 'I don't know.'\n"
-                    "Do not make up information."
-                ),
-            ),
-            ChatMessage(
-                role="user",
-                content=(
-                    f"Context:\n{context}\n\n"
-                    f"Question:\n{question}"
-                ),
-            ),
-        ]

@@ -23,7 +23,12 @@ class OllamaService(LLMService):
 
         response = self.client.chat(
             model=self.model,
-            messages=[message.model_dump() for message in messages],
+            messages=[m.model_dump() for m in messages],
+            options={
+                "temperature": 0,
+                "top_p": 0.9,
+                "num_predict": 512,
+            },
         )
 
         return response["message"]["content"]

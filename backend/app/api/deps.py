@@ -123,7 +123,6 @@ def get_document_service(
     db: Session = Depends(get_db),
     document_repository: DocumentRepository = Depends(get_document_repository),
     storage_service: StorageService = Depends(get_storage_service),
-    processing_service: DocumentProcessingService = Depends(get_document_processing_service),
 ) -> DocumentService:
     """Return a document service instance."""
 
@@ -131,7 +130,6 @@ def get_document_service(
         session=db,
         document_repository=document_repository,
         storage_service=storage_service,
-        processing_service=processing_service,
     )
 
 def get_embeddings() -> EmbeddingService:
@@ -170,4 +168,3 @@ def get_chat_service(
         search_service=search_service,
         llm_service=llm_service,
     )
-    

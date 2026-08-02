@@ -23,8 +23,11 @@ class RetrievalContext:
         """Concatenate retrieved chunk text."""
 
         return "\n\n".join(
-            chunk.content
-            for chunk in self.chunks
+            (
+                f"[Chunk {result.chunk.chunk_index}]\n"
+                f"{result.chunk.content}"
+            )
+            for result in self.results
         )
 
     @property
