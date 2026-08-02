@@ -6,6 +6,7 @@ from app.api.deps import (
     get_current_user,
     get_document_service,
     get_search_service,
+    get_chat_service,
 )
 from app.exceptions.document import (
     FileTooLargeError,
@@ -20,8 +21,14 @@ from app.schemas.search import (
     SearchRequest,
     SearchResponse,
 )
+from app.schemas.chat import (
+    ChatRequest,
+    ChatResponse,
+)
 from app.services.document import DocumentService
 from app.services.search import SearchService
+from app.services.chat import ChatService
+
 
 router = APIRouter(
     prefix="/documents",
@@ -218,3 +225,35 @@ def search_document(
         )
         for result in results
     ]
+
+@router.post(
+    "/{document_id}/chat",
+    response_model=ChatResponse,
+)
+def chat_document(
+    document_id: UUID,
+    request: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service),
+    chat_service: ChatService = Depends(get_chat_service),
+) -> ChatResponse:
+    """
+    Answer questions about a document.
+    """
+
+    document = document_service.get_user_document(
+        document_id=document_id,
+        owner_id=current_user.id,
+    )
+
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found.",
+        )
+
+    return chat_service.chat(
+        document_id=document.id,
+        question=request.question,
+    )
+

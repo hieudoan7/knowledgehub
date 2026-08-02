@@ -23,6 +23,7 @@ from app.embeddings.factory import get_embedding_service
 from app.services.search import SearchService
 from app.llm.base import LLMService
 from app.llm.factory import get_llm_service
+from app.services.chat import ChatService
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -154,3 +155,19 @@ def get_llm_dependency() -> LLMService:
     """Return the configured LLM service."""
 
     return get_llm_service()
+
+def get_chat_service(
+    search_service: SearchService = Depends(
+        get_search_service,
+    ),
+    llm_service: LLMService = Depends(
+        get_llm_dependency,
+    ),
+) -> ChatService:
+    """Return a chat service."""
+
+    return ChatService(
+        search_service=search_service,
+        llm_service=llm_service,
+    )
+    

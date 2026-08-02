@@ -4,6 +4,7 @@ from app.embeddings.base import EmbeddingService
 from app.models.document_chunk import DocumentChunk
 from app.repositories.document_chunk import DocumentChunkRepository
 from app.services.search_result import SearchResult
+from app.services.retrieval import RetrievalContext
 
 
 class SearchService:
@@ -42,4 +43,25 @@ class SearchService:
             document_id=document_id,
             embedding=query_embedding,
             limit=limit,
+        )
+
+    def retrieve(
+        self,
+        *,
+        document_id: UUID,
+        query: str,
+        limit: int = 5,
+    ) -> RetrievalContext:
+        """
+        Retrieve relevant context for a query.
+        """
+
+        results = self.search(
+            document_id=document_id,
+            query=query,
+            limit=limit,
+        )
+
+        return RetrievalContext(
+            results=results,
         )
