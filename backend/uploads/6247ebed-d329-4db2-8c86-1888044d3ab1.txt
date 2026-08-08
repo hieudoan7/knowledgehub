@@ -1,1 +1,0 @@
-This resume file is created to test document upload API for knowledgeHub application.
