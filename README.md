@@ -1,198 +1,358 @@
 # KnowledgeHub
 
-> An AI-powered knowledge management platform that enables users to upload documents, search semantically, and interact with their knowledge through natural language.
+> A production-ready Retrieval-Augmented Generation (RAG) platform that enables users to upload documents, perform semantic search, and chat with their knowledge using local AI models.
 
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-green)
-![React](https://img.shields.io/badge/React-Frontend-61DAFB)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
-![Docker](https://img.shields.io/badge/Docker-Container-2496ED)
+KnowledgeHub demonstrates modern backend software engineering practices by combining **FastAPI**, **PostgreSQL (pgvector)**, **SentenceTransformers**, and **Ollama** to build an end-to-end document intelligence system.
 
 ---
 
-## Overview
+## ✨ Features
 
-KnowledgeHub is a full-stack AI application that allows users to upload documents and ask questions about them using natural language.
+### Implemented
 
-Instead of manually searching through PDFs, Word documents, or notes, users can chat with their own knowledge base powered by Retrieval-Augmented Generation (RAG).
+- 🔐 JWT Authentication
+- 📄 Document upload
+- 📑 PDF and TXT text extraction
+- ⚙️ Background document processing
+- ✂️ Sentence-aware text chunking
+- 🧠 Embedding generation using SentenceTransformers
+- 🔍 Semantic search using PostgreSQL + pgvector
+- 💬 Retrieval-Augmented Generation (RAG) chat
+- 📚 Source attribution
+- 📝 Structured logging
+- ⚡ Global exception handling
+- 🧪 Integration tests with Pytest
+- 🏗 Clean Architecture (Service + Repository pattern)
 
-The project is built to demonstrate production-ready software engineering practices alongside modern AI technologies.
+### Planned
+
+- React frontend
+- Multi-document chat
+- Conversation history
+- Cloud storage
+- CI/CD pipeline
+- Deployment
 
 ---
 
-## Features (Planned)
+# Why KnowledgeHub?
 
-- User authentication (JWT)
-- Document upload
-  - PDF
-  - DOCX
-  - TXT
-  - Markdown
-- Automatic document processing
-- Semantic search
-- AI-powered question answering
-- Source citations
-- Chat history
-- Background processing
-- Dockerized deployment
+Large Language Models are only as useful as the context they receive.
+
+KnowledgeHub explores how Retrieval-Augmented Generation (RAG) systems can be engineered using production-ready backend architecture instead of simple AI prototypes.
+
+Users can upload documents, automatically process them into searchable embeddings, and ask natural language questions grounded entirely on their own knowledge.
+
+The project focuses on backend engineering, software architecture, and AI integration rather than frontend development.
 
 ---
 
-## Tech Stack
+# Architecture
 
-### Backend
+```
+                        Client
+                           │
+                           ▼
+                    FastAPI REST API
+                           │
+        ┌──────────────────┼──────────────────┐
+        ▼                  ▼                  ▼
+ Authentication     Document Service      Chat Service
+                           │                  │
+                           ▼                  │
+                 Background Processing        │
+                           │                  │
+                           ▼                  │
+                    Text Extraction           │
+                           │                  │
+                           ▼                  │
+                 Sentence-aware Chunking      │
+                           │                  │
+                           ▼                  │
+              SentenceTransformer Embeddings  │
+                           │                  │
+                           ▼                  │
+                  PostgreSQL + pgvector ◄─────┘
+                           │
+                           ▼
+                    Semantic Retrieval
+                           │
+                           ▼
+                     Prompt Generation
+                           │
+                           ▼
+                      Ollama (Mistral)
+                           │
+                           ▼
+                        AI Response
+```
+
+---
+
+# Screenshots
+## Swagger API
+
+![Swagger UI](docs/images/swagger-overview.png)
+---
+
+## RAG Chat
+
+![Swagger UI](docs/images/swagger-chatapi.png)
+
+# Document Processing Pipeline
+
+```
+Upload Document
+        │
+        ▼
+Store File
+        │
+        ▼
+Background Processing
+        │
+        ▼
+Extract Text
+        │
+        ▼
+Sentence-aware Chunking
+        │
+        ▼
+Generate Embeddings
+        │
+        ▼
+Store in PostgreSQL + pgvector
+        │
+        ▼
+Ready for Search & Chat
+```
+
+---
+
+# RAG Pipeline
+
+```
+User Question
+        │
+        ▼
+Generate Query Embedding
+        │
+        ▼
+Vector Similarity Search
+        │
+        ▼
+Top-k Relevant Chunks
+        │
+        ▼
+Build Prompt
+        │
+        ▼
+Ollama (Mistral)
+        │
+        ▼
+Answer + Source Chunks
+```
+
+---
+
+# Tech Stack
+
+## Backend
 
 - Python
 - FastAPI
 - SQLAlchemy
+- Alembic
+
+## Database
+
 - PostgreSQL
-- Redis
-- Celery
-- Docker
-
-### Frontend
-
-- React
-- TypeScript
-- Tailwind CSS
-
-### AI
-
-- OpenAI API
-- LangChain (or direct SDKs)
 - pgvector
-- Sentence Transformers
 
-### DevOps
+## AI
 
+- SentenceTransformers
+- Ollama
+- Mistral
+
+## Infrastructure
+
+- Docker
 - Docker Compose
-- GitHub Actions
+
+## Testing
+
+- Pytest
 
 ---
 
-## High-Level Architecture
+# Project Structure
 
 ```
-                React Frontend
-                       │
-                REST API (FastAPI)
-                       │
-      ┌────────────────┼────────────────┐
-      │                │                │
- Authentication   Document API     Chat API
-      │                │                │
-      └────────────────┼────────────────┘
-                       │
-                 PostgreSQL + pgvector
-                       │
-                Background Workers
-                       │
-               Embedding Generation
-                       │
-                  Large Language Model
-```
-
----
-
-## Project Structure
-
-```
-knowledgehub/
+backend/
 │
-├── backend/
+├── app/
+│   ├── api/
+│   ├── core/
+│   ├── db/
+│   ├── embeddings/
+│   ├── exceptions/
+│   ├── llm/
+│   ├── models/
+│   ├── processors/
+│   ├── prompts/
+│   ├── repositories/
+│   ├── schemas/
+│   ├── services/
+│   ├── storage/
+│   ├── utils/
+│   └── workers/
 │
-├── frontend/
+├── tests/
+│   ├── api/
+│   ├── integration/
+│   ├── repositories/
+│   └── services/
 │
-├── docs/
-│
-├── docker-compose.yml
-│
+├── alembic/
+├── Dockerfile
 └── README.md
 ```
 
 ---
 
-## Development Roadmap
+# Getting Started
 
-### Phase 1
-- [ ] Project setup
-- [ ] Docker environment
-- [ ] FastAPI backend
-- [ ] React frontend
-- [ ] PostgreSQL
-- [ ] Authentication
+## Clone the repository
 
-### Phase 2
-- [ ] File upload
-- [ ] Document parsing
-- [ ] Chunking
-- [ ] Embedding generation
-- [ ] Vector storage
+```bash
+git clone https://github.com/hieudoan7/knowledgehub.git
 
-### Phase 3
-- [ ] Semantic search
-- [ ] Chat API
-- [ ] Citation support
-- [ ] Conversation history
+cd knowledgehub/backend
+```
 
-### Phase 4
-- [ ] Background jobs
-- [ ] Redis caching
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Logging
+## Create environment file
 
-### Phase 5
-- [ ] Deployment
-- [ ] CI/CD
-- [ ] Documentation
-- [ ] Performance optimization
+```bash
+cp .env.example .env.local
+```
+
+Update the environment variables as required.
 
 ---
 
-## Goals
+## Install dependencies
 
-This project aims to demonstrate:
+Using uv
 
-- Backend software engineering
-- REST API design
-- AI application development
-- Retrieval-Augmented Generation (RAG)
-- Database design
-- Authentication and authorization
-- Docker-based deployment
-- Testing
-- Clean Architecture
-- Production-ready development workflow
+```bash
+uv sync
+```
 
 ---
 
-## Status
+## Run database migrations
 
-🚧 Currently under active development.
-
-The first milestone is setting up the project foundation with FastAPI, React, PostgreSQL, and Docker.
-
----
-
-## License
-
-MIT
-
-
-## Migration Flow
-# Generate a migration after changing models
-uv run alembic revision --autogenerate -m "describe your change"
-
-# Apply the latest migration
+```bash
 uv run alembic upgrade head
+```
 
-# Roll back one migration
-uv run alembic downgrade -1
+---
 
-# Show current migration
-uv run alembic current
+## Start the application
 
-# Show migration history
-uv run alembic history
+```bash
+uv run uvicorn app.main:app --reload
+```
 
+The API will be available at
+
+```
+http://localhost:8000
+```
+
+Interactive API documentation
+
+```
+http://localhost:8000/docs
+```
+
+---
+
+# Running Tests
+
+Run all tests
+
+```bash
+uv run pytest
+```
+
+Run integration tests
+
+```bash
+uv run pytest tests/integration
+```
+
+---
+
+# Design Principles
+
+KnowledgeHub follows several software engineering principles.
+
+- Clean Architecture
+- Repository Pattern
+- Dependency Injection
+- Separation of Concerns
+- Configuration-driven design
+- Structured logging
+- Global exception handling
+- Automated testing
+
+---
+
+# Current Status
+
+Current Version
+
+**v1.0 (Backend MVP)**
+
+Completed
+
+- Authentication
+- Document Upload
+- Background Processing
+- Semantic Search
+- RAG Chat
+- Integration Testing
+
+Currently Working On
+
+- React Frontend
+- Deployment
+- CI/CD
+
+---
+
+# Future Improvements
+
+- Streaming LLM responses
+- Hybrid search (Vector + Keyword)
+- Multi-document conversations
+- User workspaces
+- Cloud object storage
+- Authentication with OAuth
+- Production deployment
+- Monitoring and metrics
+
+---
+
+# License
+
+This project is licensed under the MIT License.
+
+---
+
+# About the Project
+
+KnowledgeHub was built as a portfolio project to demonstrate modern backend software engineering and AI application development.
+
+The project emphasizes production-ready architecture, maintainable code, automated testing, and practical Retrieval-Augmented Generation (RAG) techniques rather than experimental prototypes.
