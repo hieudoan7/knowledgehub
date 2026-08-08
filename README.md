@@ -1,10 +1,32 @@
 # KnowledgeHub
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.116-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 > A production-ready Retrieval-Augmented Generation (RAG) platform that enables users to upload documents, perform semantic search, and chat with their knowledge using local AI models.
 
 KnowledgeHub demonstrates modern backend software engineering practices by combining **FastAPI**, **PostgreSQL (pgvector)**, **SentenceTransformers**, and **Ollama** to build an end-to-end document intelligence system.
 
 ---
+# Table of Contents
+
+- [✨ Features](#-features)
+- [Overview](#overview)
+- [Engineering Highlights](#engineering-highlights)
+- [Architecture](#architecture)
+- [Screenshots](#screenshots)
+- [Document Processing Pipeline](#document-processing-pipeline)
+- [RAG Pipeline](#rag-pipeline)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Running Tests](#running-tests)
+- [Design Principles](#design-principles)
+- [Current Status](#current-status)
+- [Future Improvements](#future-improvements)
+- [License](#license)
+- [About the Project](#about-the-project)
 
 ## ✨ Features
 
@@ -35,7 +57,7 @@ KnowledgeHub demonstrates modern backend software engineering practices by combi
 
 ---
 
-# Why KnowledgeHub?
+# Overview
 
 Large Language Models are only as useful as the context they receive.
 
@@ -46,6 +68,22 @@ Users can upload documents, automatically process them into searchable embedding
 The project focuses on backend engineering, software architecture, and AI integration rather than frontend development.
 
 ---
+
+## Engineering Highlights
+
+This project was designed to demonstrate backend software engineering rather than simply integrate AI models.
+
+Highlights include:
+
+- Clean Architecture with Service and Repository layers
+- Dependency Injection throughout the application
+- Sentence-aware chunking to improve retrieval quality
+- Asynchronous document processing using FastAPI BackgroundTasks
+- Vector similarity search with PostgreSQL (pgvector)
+- Configuration-driven design using Pydantic Settings
+- Structured logging and centralized exception handling
+- End-to-end integration tests covering upload, processing, search, chat, and authorization
+
 
 # Architecture
 
