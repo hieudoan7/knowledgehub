@@ -9,7 +9,9 @@ from app.schemas.chat import (
     ChatSource,
 )
 from app.prompts.rag import build_rag_messages
-
+from app.repositories.chat_history import ChatHistoryRepository
+from app.models.chat_message_record import ChatMessageRecord
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -19,16 +21,21 @@ class ChatService:
 
     def __init__(
         self,
+        session: Session,
         search_service: SearchService,
         llm_service: LLMService,
+        chat_history_repository: ChatHistoryRepository,
     ) -> None:
+        self.session = session
         self.search_service = search_service
         self.llm_service = llm_service
+        self.chat_history_repository = chat_history_repository
 
     def chat(
         self,
         *,
         document_id: UUID,
+        user_id: UUID,
         question: str,
     ) -> ChatResponse:
         """
@@ -54,7 +61,7 @@ class ChatService:
             context,
         )
 
-        return ChatResponse(
+        response = ChatResponse(
             answer=answer,
             sources=[
                 ChatSource(
@@ -64,3 +71,25 @@ class ChatService:
                 for result in context.sources
             ],
         )
+        try:
+            _ = self.chat_history_repository.create(
+                message=ChatMessageRecord(
+                    user_id=user_id,
+                    document_id=document_id,
+                    question=question,
+                    answer=response.answer,
+                    sources=[
+                        {
+                            "chunk_index": source.chunk_index,
+                            "score": source.score,
+                        }
+                        for source in response.sources
+                    ],
+                )
+            ) 
+            self.session.commit()
+        except Exception as e:
+            self.session.rollback()
+            raise e
+
+        return response

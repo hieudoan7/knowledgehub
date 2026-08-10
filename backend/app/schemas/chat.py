@@ -1,3 +1,5 @@
+from datetime import datetime
+from uuid import UUID
 from pydantic import BaseModel, Field
 
 
@@ -15,3 +17,11 @@ class ChatSource(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     sources: list[ChatSource]
+
+
+class ChatHistoryItem(BaseModel):
+    id: UUID
+    question: str
+    answer: str
+    sources: list[ChatSource]
+    created_at: datetime

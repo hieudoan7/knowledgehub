@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, BackgroundTasks
 
 from app.api.deps import (
+    get_chat_history_repository,
     get_current_user,
     get_document_service,
     get_search_service,
@@ -25,10 +26,13 @@ from app.schemas.search import (
 from app.schemas.chat import (
     ChatRequest,
     ChatResponse,
+    ChatHistoryItem,
+    ChatSource,
 )
 from app.services.document import DocumentService
 from app.services.search import SearchService
 from app.services.chat import ChatService
+from app.repositories.chat_history import ChatHistoryRepository
 
 
 router = APIRouter(
@@ -245,6 +249,7 @@ def chat_document(
 
     return chat_service.chat(
         document_id=document.id,
+        user_id=current_user.id,
         question=request.question,
     )
 
@@ -266,3 +271,46 @@ def get_document_status(
         id=document.id,
         status=document.status,
     )
+
+
+@router.get(
+    "/{document_id}/chat/history",
+    response_model=list[ChatHistoryItem],
+)
+def get_chat_history(
+    document_id: UUID,
+    current_user: User = Depends(get_current_user),
+    document_service: DocumentService = Depends(
+        get_document_service,
+    ),
+    chat_history_repository: ChatHistoryRepository = Depends(
+        get_chat_history_repository,
+    ),
+) -> list[ChatHistoryItem]:
+    """
+    Return chat history for a document.
+    """
+
+    document = document_service.get_user_document(
+        document_id=document_id,
+        owner_id=current_user.id,
+    )
+
+    messages = chat_history_repository.list_by_document(
+        document_id=document.id,
+        user_id=current_user.id,
+    )
+
+    return [
+        ChatHistoryItem(
+            id=message.id,
+            question=message.question,
+            answer=message.answer,
+            sources=[
+                ChatSource(**source)
+                for source in message.sources
+            ],
+            created_at=message.created_at,
+        )
+        for message in messages
+    ]

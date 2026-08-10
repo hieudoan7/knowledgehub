@@ -24,6 +24,7 @@ from app.services.search import SearchService
 from app.llm.base import LLMService
 from app.llm.factory import get_llm_service
 from app.services.chat import ChatService
+from app.repositories.chat_history import ChatHistoryRepository
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -154,17 +155,32 @@ def get_llm_dependency() -> LLMService:
 
     return get_llm_service()
 
+
+def get_chat_history_repository(
+    session: Session = Depends(get_db),
+) -> ChatHistoryRepository:
+    """Return a ChatHistoryRepository instance."""
+
+    return ChatHistoryRepository(session)
+
+
 def get_chat_service(
+    session: Session = Depends(get_db),
     search_service: SearchService = Depends(
         get_search_service,
     ),
     llm_service: LLMService = Depends(
         get_llm_dependency,
     ),
+    chat_history_repository: ChatHistoryRepository = Depends(
+            get_chat_history_repository,
+    ),
 ) -> ChatService:
     """Return a chat service."""
 
     return ChatService(
+        session=session,
         search_service=search_service,
         llm_service=llm_service,
+        chat_history_repository=chat_history_repository,
     )
