@@ -24,6 +24,14 @@ export interface ChatResponse {
   sources: ChatSource[];
 }
 
+export interface ChatHistoryItem {
+  id: string;
+  question: string;
+  answer: string;
+  sources: ChatSource[];
+  created_at: string;
+}
+
 export const getDocuments = async (): Promise<Document[]> => {
   const response = await apiClient.get<Document[]>("/documents");
 
@@ -72,6 +80,14 @@ export const chatWithDocument = async (
   const response = await apiClient.post<ChatResponse>(
     `/documents/${documentId}/chat`,
     { question }
+  );
+
+  return response.data;
+};
+
+export const getChatHistory = async (documentId: string): Promise<ChatHistoryItem[]> => {
+  const response = await apiClient.get<ChatHistoryItem[]>(
+    `/documents/${documentId}/chat/history`
   );
 
   return response.data;

@@ -4,8 +4,9 @@ import { Link, useParams } from "react-router-dom";
 import {
   chatWithDocument,
   getDocument,
-  type ChatResponse,
+  getChatHistory,
   type Document,
+  type ChatHistoryItem,
 } from "../api/documents";
 
 function Chat() {
@@ -15,7 +16,7 @@ function Chat() {
 
   const [document, setDocument] = useState<Document | null>(null);
   const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState<ChatResponse | null>(null);
+  const [messages, setMessages] = useState<ChatHistoryItem[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [asking, setAsking] = useState(false);
@@ -32,6 +33,8 @@ function Chat() {
       try {
         const data = await getDocument(documentId);
         setDocument(data);
+        const history = await getChatHistory(documentId);
+        setMessages(history);
       } catch {
         setError("Failed to load document.");
       } finally {
@@ -53,12 +56,26 @@ function Chat() {
     setAsking(true);
 
     try {
+      const currentQuestion = question.trim();
+
       const data = await chatWithDocument(
         documentId,
-        question.trim()
+        currentQuestion
       );
-
-      setResponse(data);
+      
+      const newMessage: ChatHistoryItem = {
+        id: crypto.randomUUID(),
+        question: currentQuestion,
+        answer: data.answer,
+        sources: data.sources,
+        created_at: new Date().toISOString(),
+      };
+      
+      setMessages((previous) => [
+        ...previous,
+        newMessage,
+      ]);
+      
       setQuestion("");
     } catch {
       setError("Failed to get an answer.");
@@ -92,38 +109,39 @@ function Chat() {
 
         <h1>{document?.original_filename}</h1>
       </header>
-
       <section>
-        {response && (
-          <>
-            <h2>Answer</h2>
+        {messages.length === 0 ? (
+          <p>Ask a question about this document.</p>
+        ) : (
+          messages.map((message) => (
+            <article key={message.id}>
+              <h3>You</h3>
+              <p>{message.question}</p>
 
-            <p>{response.answer}</p>
+              <h3>Answer</h3>
+              <p>{message.answer}</p>
 
-            <h3>Sources</h3>
+              <h4>Sources</h4>
 
-            {response.sources.length === 0 ? (
-              <p>No sources returned.</p>
-            ) : (
-              response.sources.map((source) => (
-                <div key={source.chunk_index}>
-                  <strong>
-                    Chunk {source.chunk_index}
-                  </strong>
+              {message.sources.length === 0 ? (
+                <p>No sources returned.</p>
+              ) : (
+                message.sources.map((source, index) => (
+                  <div key={`${message.id}-${source.chunk_index}-${index}`}>
+                    <strong>
+                      Chunk {source.chunk_index}
+                    </strong>
 
-                  {" — "}
+                    {" — "}
 
-                  Score: {source.score.toFixed(3)}
-                </div>
-              ))
-            )}
-          </>
-        )}
+                    Score: {source.score.toFixed(3)}
+                  </div>
+                ))
+              )}
 
-        {!response && (
-          <p>
-            Ask a question about this document.
-          </p>
+              <hr />
+            </article>
+          ))
         )}
       </section>
 
