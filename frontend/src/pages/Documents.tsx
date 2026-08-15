@@ -29,7 +29,7 @@ function Documents() {
   }, []);
 
   const pollDocumentStatus = async (documentId: string) => {
-    const maxAttempts = 30;
+    const maxAttempts = 60;
     const interval = 2000;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -74,7 +74,9 @@ function Documents() {
         ...current,
       ]);
 
-      if (document.status === "uploaded") {
+      if (document.status === "uploaded"
+        || document.status === "processing"
+      ) {
         pollDocumentStatus(document.id).catch(() => {
           setError(
             "Failed to check document processing status."

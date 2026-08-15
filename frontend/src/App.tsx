@@ -1,6 +1,14 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
+import AppLayout from "./layouts/AppLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Documents from "./pages/Documents";
@@ -11,10 +19,26 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/documents" element={<Documents />} />
-          <Route path="/documents/:documentId/chat" element={<Chat />} />
+
+          {/* Authenticated application */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route
+                path="/documents"
+                element={<Documents />}
+              />
+
+              <Route
+                path="/documents/:documentId/chat"
+                element={<Chat />}
+              />
+            </Route>
+          </Route>
+
+          {/* Default route */}
           <Route
             path="/"
             element={<Navigate to="/login" replace />}
