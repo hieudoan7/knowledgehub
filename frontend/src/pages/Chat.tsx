@@ -1,4 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, useRef, type FormEvent } from "react";
+
 import { Link, useParams } from "react-router-dom";
 
 import {
@@ -21,6 +22,8 @@ function Chat() {
   const [loading, setLoading] = useState(true);
   const [asking, setAsking] = useState(false);
   const [error, setError] = useState("");
+  
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const loadDocument = async () => {
@@ -33,6 +36,7 @@ function Chat() {
       try {
         const data = await getDocument(documentId);
         setDocument(data);
+
         const history = await getChatHistory(documentId);
         setMessages(history);
       } catch {
@@ -44,6 +48,12 @@ function Chat() {
 
     loadDocument();
   }, [documentId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -62,7 +72,7 @@ function Chat() {
         documentId,
         currentQuestion
       );
-      
+
       const newMessage: ChatHistoryItem = {
         id: crypto.randomUUID(),
         question: currentQuestion,
@@ -70,12 +80,12 @@ function Chat() {
         sources: data.sources,
         created_at: new Date().toISOString(),
       };
-      
+
       setMessages((previous) => [
         ...previous,
         newMessage,
       ]);
-      
+
       setQuestion("");
     } catch {
       setError("Failed to get an answer.");
@@ -85,87 +95,189 @@ function Chat() {
   };
 
   if (loading) {
-    return <p>Loading document...</p>;
+    return (
+      <div className="flex min-h-[500px] items-center justify-center">
+        <p className="text-sm text-slate-500">
+          Loading document...
+        </p>
+      </div>
+    );
   }
 
   if (error && !document) {
     return (
-      <main>
-        <Link to="/documents">
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6">
+        <Link
+          to="/documents"
+          className="text-sm font-medium text-slate-700 hover:text-slate-900"
+        >
           ← Back to documents
         </Link>
 
-        <p>{error}</p>
-      </main>
+        <p className="mt-4 text-sm text-red-700">
+          {error}
+        </p>
+      </div>
     );
   }
 
   return (
-    <main>
-      <header>
-        <Link to="/documents">
-          ← Back to documents
-        </Link>
-
-        <h1>{document?.original_filename}</h1>
-      </header>
-      <section>
-        {messages.length === 0 ? (
-          <p>Ask a question about this document.</p>
-        ) : (
-          messages.map((message) => (
-            <article key={message.id}>
-              <h3>You</h3>
-              <p>{message.question}</p>
-
-              <h3>Answer</h3>
-              <p>{message.answer}</p>
-
-              <h4>Sources</h4>
-
-              {message.sources.length === 0 ? (
-                <p>No sources returned.</p>
-              ) : (
-                message.sources.map((source, index) => (
-                  <div key={`${message.id}-${source.chunk_index}-${index}`}>
-                    <strong>
-                      Chunk {source.chunk_index}
-                    </strong>
-
-                    {" — "}
-
-                    Score: {source.score.toFixed(3)}
-                  </div>
-                ))
-              )}
-
-              <hr />
-            </article>
-          ))
-        )}
-      </section>
-
-      {error && <p>{error}</p>}
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={question}
-          onChange={(event) =>
-            setQuestion(event.target.value)
-          }
-          placeholder="Ask a question about this document..."
-          disabled={asking}
-        />
-
-        <button
-          type="submit"
-          disabled={asking || !question.trim()}
+    <div className="flex h-[calc(100vh-9rem)] flex-col">
+      {/* Document header */}
+      <div className="mb-4 flex shrink-0 items-center gap-4 border-b border-slate-200 pb-4">
+        <Link
+          to="/documents"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100"
+          aria-label="Back to documents"
         >
-          {asking ? "Thinking..." : "Ask"}
-        </button>
+          ←
+        </Link>
+  
+        <div className="min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            Document
+          </p>
+  
+          <h1 className="truncate text-lg font-bold text-slate-900">
+            {document?.original_filename}
+          </h1>
+        </div>
+      </div>
+  
+      {/* Conversation */}
+      <section className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-4xl space-y-8 px-2 py-4">
+          {messages.length === 0 ? (
+            <div className="flex min-h-[400px] items-center justify-center">
+              <div className="max-w-md text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-2xl text-white">
+                  ✦
+                </div>
+  
+                <h2 className="text-xl font-semibold text-slate-900">
+                  Ask anything about this document
+                </h2>
+  
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  KnowledgeHub will search the document and
+                  use the relevant content to generate an
+                  answer.
+                </p>
+              </div>
+            </div>
+          ) : (
+            messages.map((message) => (
+              <article
+                key={message.id}
+                className="space-y-5"
+              >
+                {/* User question */}
+                <div className="flex justify-end">
+                  <div className="max-w-[75%]">
+                    <div className="mb-1 text-right text-xs font-medium text-slate-400">
+                      You
+                    </div>
+  
+                    <div className="rounded-2xl rounded-tr-md bg-slate-900 px-5 py-3 text-sm leading-6 text-white">
+                      {message.question}
+                    </div>
+                  </div>
+                </div>
+  
+                {/* AI answer */}
+                <div className="flex justify-start">
+                  <div className="w-full max-w-3xl">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-900 text-xs text-white">
+                        ✦
+                      </span>
+  
+                      KnowledgeHub
+                    </div>
+  
+                    <div className="rounded-2xl rounded-tl-md border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                      <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                        {message.answer}
+                      </p>
+  
+                      {/* Sources */}
+                      <div className="mt-5 border-t border-slate-100 pt-4">
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                          Sources
+                        </p>
+  
+                        {message.sources.length === 0 ? (
+                          <p className="text-sm text-slate-400">
+                            No sources returned.
+                          </p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {message.sources.map(
+                              (source, index) => (
+                                <div
+                                  key={`${message.id}-${source.chunk_index}-${index}`}
+                                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                                >
+                                  <span className="text-xs font-medium text-slate-700">
+                                    Chunk {source.chunk_index}
+                                  </span>
+  
+                                  <span className="ml-2 text-xs text-slate-400">
+                                    {source.score.toFixed(3)}
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </section>
+  
+      {/* Error */}
+      {error && (
+        <div className="mx-auto mt-3 w-full max-w-4xl shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+  
+      {/* Question input */}
+      <form onSubmit={handleSubmit} className="shrink-0 border-t border-slate-200 bg-slate-50 py-4">
+        <div className="mx-auto w-full max-w-4xl">
+          <div className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white p-2 shadow-sm focus-within:border-slate-500 focus-within:ring-2 focus-within:ring-slate-100">
+            <input
+              type="text"
+              value={question}
+              onChange={(event) =>
+                setQuestion(event.target.value)
+              }
+              placeholder="Ask a question about this document..."
+              disabled={asking}
+              className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+            />
+  
+            <button
+              type="submit"
+              disabled={asking || !question.trim()}
+              className="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {asking ? "Thinking..." : "Ask →"}
+            </button>
+          </div>
+  
+          <p className="mt-2 text-center text-xs text-slate-400">
+            Answers are generated from the contents of this document.
+          </p>
+        </div>
       </form>
-    </main>
+    </div>
   );
 }
 

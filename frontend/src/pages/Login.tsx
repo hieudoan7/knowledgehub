@@ -34,49 +34,113 @@ function Login() {
   };
 
   return (
-    <main>
-      <h1>KnowledgeHub</h1>
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+      <div className="w-full max-w-md">
+        {/* Brand */}
+        <div className="mb-8 text-center">
+          <Link
+            to="/login"
+            className="text-2xl font-bold tracking-tight text-slate-900"
+          >
+            KnowledgeHub
+          </Link>
 
-      <h2>Login</h2>
-
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email</label>
-
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
+          <p className="mt-2 text-sm text-slate-500">
+            Ask questions about your documents with AI.
+          </p>
         </div>
 
-        <div>
-          <label htmlFor="password">Password</label>
+        {/* Login card */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-900">
+              Welcome back
+            </h1>
 
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(event) =>
-              setPassword(event.target.value)
-            }
-            required
-          />
+            <p className="mt-1 text-sm text-slate-500">
+              Sign in to continue to your documents.
+            </p>
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Email
+              </label>
+
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
+                Password
+              </label>
+
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                required
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100"
+              />
+            </div>
+
+            {error && (
+              <div
+                role="alert"
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {submitting ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+
+          <div className="mt-6 border-t border-slate-100 pt-6 text-center">
+            <p className="text-sm text-slate-500">
+              Don't have an account?{" "}
+              <Link
+                to="/register"
+                className="font-medium text-slate-900 hover:underline"
+              >
+                Create an account
+              </Link>
+            </p>
+          </div>
         </div>
-
-        {error && <p>{error}</p>}
-
-        <button type="submit" disabled={submitting}>
-          {submitting ? "Logging in..." : "Login"}
-        </button>
-      </form>
-
-      <p>
-        Don't have an account?{" "}
-        <Link to="/register">Register</Link>
-      </p>
+      </div>
     </main>
   );
 }
