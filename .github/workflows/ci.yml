@@ -54,6 +54,14 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --frozen --dev
+        
+      - name: Enable pgvector
+        working-directory: .
+        run: |
+          docker exec \
+            $(docker ps -q --filter ancestor=pgvector/pgvector:pg17) \
+            psql -U postgres -d knowledgehub_test \
+            -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       - name: Install Ollama
         working-directory: .
