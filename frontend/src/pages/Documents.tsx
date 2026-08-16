@@ -13,19 +13,32 @@ function Documents() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
-  const loadDocuments = async () => {
-    try {
-      const data = await getDocuments();
-      setDocuments(data);
-    } catch {
-      setError("Failed to load documents.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadDocuments();
+    let cancelled = false;
+  
+    const load = async () => {
+      try {
+        const data = await getDocuments();
+  
+        if (!cancelled) {
+          setDocuments(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Failed to load documents.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+  
+    load();
+  
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const pollDocumentStatus = async (documentId: string) => {
