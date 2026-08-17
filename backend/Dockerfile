@@ -7,6 +7,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Force Python stdout/stderr to be unbuffered
 ENV PYTHONUNBUFFERED=1
 
+# Use the project's uv-managed virtual environment
+ENV PATH="/app/.venv/bin:$PATH"
+
+ENV UV_NO_DEV=1
+
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
@@ -17,7 +22,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock* ./
 
 # Install project dependencies
-RUN uv sync --frozen
+RUN uv sync --frozen --no-dev
 
 # Copy the application source
 COPY . .
