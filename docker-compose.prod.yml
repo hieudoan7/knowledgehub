@@ -1,6 +1,6 @@
 services:
   api:
-    image: knowledgehub-api:latest
+    image: ghcr.io/hieudoan7/knowledgehub-api:latest
     container_name: knowledgehub-api
 
     env_file:
