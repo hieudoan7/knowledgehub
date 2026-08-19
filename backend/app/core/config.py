@@ -62,6 +62,7 @@ class Settings(BaseSettings):
 
     LLM_PROVIDER: str = "ollama"
     LLM_MODEL: str = "mistral:latest"
+    AWS_REGION: str = "ap-southeast-2"
 
     OLLAMA_HOST: str = "http://localhost:11434"
 
