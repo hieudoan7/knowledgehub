@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.security import decode_access_token
 from app.core.config import settings
 from app.storage.base import StorageService
-from app.storage.local import LocalStorageService
+from app.storage.factory import get_storage_service
 from app.db.session import get_db
 from app.models.user import User
 from app.repositories.user import UserRepository
@@ -93,12 +93,10 @@ def get_document_repository(
     return DocumentRepository(db)
 
 
-def get_storage_service() -> StorageService:
-    """Return the configured storage service."""
+# def get_storage_service() -> StorageService:
+#     """Return the configured storage service."""
 
-    return LocalStorageService(
-        upload_dir=settings.UPLOAD_DIR,
-    )
+#     return get_storage_service()
 
 def get_document_chunk_repository(
     db: Session = Depends(get_db),

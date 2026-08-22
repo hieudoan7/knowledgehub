@@ -24,11 +24,17 @@ COPY pyproject.toml uv.lock* ./
 # Install project dependencies
 RUN uv sync --frozen --no-dev
 
+RUN useradd --create-home --shell /bin/bash appuser
+
 # Copy the application source
 COPY . .
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
 
 # Expose the FastAPI port
 EXPOSE 8000
 
 # Start the FastAPI development server
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

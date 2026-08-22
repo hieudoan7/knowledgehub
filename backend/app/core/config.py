@@ -42,6 +42,11 @@ class Settings(BaseSettings):
 
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10 MB
 
+    STORAGE_PROVIDER: str = "local"
+    S3_BUCKET_NAME: str = ""
+    S3_REGION: str = "ap-southeast-2"
+    S3_PREFIX: str = "documents"
+
     # ------------------------------------------------------------------
     # Chunking
     # ------------------------------------------------------------------
@@ -53,7 +58,7 @@ class Settings(BaseSettings):
     # Embedding
     # ------------------------------------------------------------------
 
-    EMBEDDING_PROVIDER: str = "ollama"
+    EMBEDDING_PROVIDER: str = "local"
     EMBEDDING_MODEL: str = "BAAI/bge-small-en-v1.5"
 
     # ------------------------------------------------------------------

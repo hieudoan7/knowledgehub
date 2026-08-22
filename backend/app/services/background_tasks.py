@@ -9,8 +9,8 @@ from app.db.session import SessionLocal
 from app.repositories.document import DocumentRepository
 from app.repositories.document_chunk import DocumentChunkRepository
 from app.services.document_processing import DocumentProcessingService
-from app.embeddings.local import LocalEmbeddingService
-from app.storage.local import LocalStorageService
+from app.embeddings.factory import get_embedding_service
+from app.storage.factory import get_storage_service
 
 
 logger = logging.getLogger(__name__)
@@ -31,8 +31,8 @@ class BackgroundTaskService:
             processing_service = DocumentProcessingService(
                 document_repository=DocumentRepository(db),
                 document_chunk_repository=DocumentChunkRepository(db),
-                embedding_service=LocalEmbeddingService(),
-                storage_service=LocalStorageService(upload_dir=settings.UPLOAD_DIR),
+                embedding_service=get_embedding_service(),
+                storage_service=get_storage_service(),
             )
             logger.info("Background task started")
             processing_service.process(document_id)

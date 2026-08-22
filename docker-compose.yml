@@ -18,6 +18,7 @@ services:
     volumes:
       - ./backend:/app
       - backend_venv:/app/.venv
+      - ~/.aws:/root/.aws:ro
 
     depends_on:
       - postgres

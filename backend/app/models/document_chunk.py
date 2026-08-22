@@ -31,7 +31,7 @@ class DocumentChunk(Base, TimestampMixin):
     )
 
     embedding: Mapped[list[float] | None] = mapped_column(
-        Vector(384),
+        Vector(512),
         nullable=True,
     )
 
