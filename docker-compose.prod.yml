@@ -2,18 +2,25 @@ services:
   api:
     image: ghcr.io/hieudoan7/knowledgehub-api:latest
     container_name: knowledgehub-api
+    environment:
+      AWS_SHARED_CREDENTIALS_FILE: /app/.aws/credentials
+      AWS_CONFIG_FILE: /app/.aws/config
+      AWS_EC2_METADATA_DISABLED: "true"
 
     env_file:
       - ./deploy/.env.prod
-    
+
     ports:
       - "8000:8000"
-    
+
     depends_on:
       postgres:
         condition: service_healthy
 
     restart: unless-stopped
+    volumes:
+      - ~/.aws/credentials:/app/.aws/credentials:ro
+      - ~/.aws/config:/app/.aws/config:ro
 
   postgres:
     image: pgvector/pgvector:pg17
