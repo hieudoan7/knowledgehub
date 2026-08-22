@@ -72,6 +72,7 @@ class Settings(BaseSettings):
     OLLAMA_HOST: str = "http://localhost:11434"
 
     RETRIEVAL_LIMIT: int = 5
+    RETRIEVAL_THRESHOLD: float = 0.0
 
     # ------------------------------------------------------------------
     # Settings
