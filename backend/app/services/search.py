@@ -65,7 +65,7 @@ class SearchService:
         results = [
             result
             for result in results
-            if result.score >= 0.45
+            if result.score >= settings.RETRIEVAL_THRESHOLD
         ]
 
         return RetrievalContext(
