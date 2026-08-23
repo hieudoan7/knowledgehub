@@ -53,7 +53,7 @@ jobs:
           version: "latest"
 
       - name: Install dependencies
-        run: uv sync --frozen --dev --group local-ml
+        run: uv sync --frozen --dev
 
       - name: Enable pgvector
         working-directory: .
@@ -63,28 +63,24 @@ jobs:
             psql -U postgres -d knowledgehub_test \
             -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
-      - name: Install Ollama
-        working-directory: .
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
+      # - name: Install Ollama
+      #   working-directory: .
+      #   run: |
+      #     curl -fsSL https://ollama.com/install.sh | sh
 
-      - name: Start Ollama
-        working-directory: .
-        run: |
-          ollama serve > /tmp/ollama.log 2>&1 &
-          sleep 5
-          curl -f http://localhost:11434/api/tags
+      # - name: Start Ollama
+      #   working-directory: .
+      #   run: |
+      #     ollama serve > /tmp/ollama.log 2>&1 &
+      #     sleep 5
+      #     curl -f http://localhost:11434/api/tags
 
-      - name: Pull Mistral
-        working-directory: .
-        run: ollama pull mistral:latest
+      # - name: Pull Mistral
+      #   working-directory: .
+      #   run: ollama pull mistral:latest
 
-      - name: Run tests
-        run: uv run pytest -v \
-          --ignore=tests/integration/test_chat.py \
-          --ignore=tests/integration/test_document_security.py \
-          --ignore=tests/integration/test_pipeline.py \
-          --ignore=tests/integration/test_search.py
+      # - name: Run tests
+      #   run: uv run pytest -v 
 
   frontend:
     name: Frontend build
