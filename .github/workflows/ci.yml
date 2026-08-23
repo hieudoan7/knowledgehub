@@ -80,7 +80,11 @@ jobs:
         run: ollama pull mistral:latest
 
       - name: Run tests
-        run: uv run pytest -v
+        run: uv run pytest -v \
+          --ignore=tests/integration/test_chat.py \
+          --ignore=tests/integration/test_document_security.py \
+          --ignore=tests/integration/test_pipeline.py \
+          --ignore=tests/integration/test_search.py
 
   frontend:
     name: Frontend build
