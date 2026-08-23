@@ -164,6 +164,8 @@ jobs:
           script: |
             cd ~/knowledgeHub
 
+            git pull origin master
+
             sed -i "s/^API_IMAGE_TAG=.*/API_IMAGE_TAG=${{ github.sha }}/" deploy/.env.prod
 
             docker compose \
