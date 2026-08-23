@@ -1,6 +1,6 @@
 services:
   api:
-    image: ghcr.io/hieudoan7/knowledgehub-api:latest
+    image: ghcr.io/hieudoan7/knowledgehub-api:${API_IMAGE_TAG}
     container_name: knowledgehub-api
     environment:
       AWS_SHARED_CREDENTIALS_FILE: /app/.aws/credentials
