@@ -1,3 +1,5 @@
+import hashlib
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -75,3 +77,14 @@ def decode_access_token(token: str) -> dict[str, Any]:
         )
     except JWTInvalidTokenError as exc:
         raise InvalidTokenError("Invalid or expired access token.") from exc
+
+def create_refresh_token() -> str:
+    """Create a cryptographically secure refresh token."""
+
+    return secrets.token_urlsafe(64)
+
+
+def hash_refresh_token(token: str) -> str:
+    """Hash a refresh token before storing it."""
+
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()

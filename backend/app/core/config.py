@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -29,6 +30,12 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 14
+
+    REFRESH_TOKEN_COOKIE_NAME: str = "refresh_token"
+    REFRESH_TOKEN_COOKIE_SECURE: bool = True
+    REFRESH_TOKEN_COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "none"
+
     ALGORITHM: str = "HS256"
 
     # ------------------------------------------------------------------

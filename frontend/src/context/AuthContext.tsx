@@ -7,7 +7,9 @@ import {
 import {
   getCurrentUser,
   login as loginApi,
+  logout as logoutApi,
   register as registerApi,
+  refresh as refreshApi,
   type LoginRequest,
   type RegisterRequest,
   type User,
@@ -26,14 +28,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
+        let token = localStorage.getItem("access_token");
+  
+        if (!token) {
+          const response = await refreshApi();
+          token = response.access_token;
+  
+          localStorage.setItem("access_token", token);
+        }
+  
         const currentUser = await getCurrentUser();
         setUser(currentUser);
       } catch {
@@ -42,7 +46,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setLoading(false);
       }
     };
-
+  
     initializeAuth();
   }, []);
 
@@ -67,9 +71,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   };
 
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    setUser(null);
+  const logout = async () => {
+    try {
+      await logoutApi();
+    } finally {
+      localStorage.removeItem("access_token");
+      setUser(null);
+    }
   };
 
   return (

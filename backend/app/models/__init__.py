@@ -1,6 +1,7 @@
 from app.models.document import Document
 from app.models.document_chunk import DocumentChunk
 from app.models.chat_message_record import ChatMessageRecord
+from app.models.refresh_token_session import RefreshTokenSession
 from app.models.user import User
 
 __all__ = [
@@ -8,5 +9,6 @@ __all__ = [
     "Document",
     "DocumentChunk",
     "ChatMessageRecord",
+    "RefreshTokenSession"
 ]
 

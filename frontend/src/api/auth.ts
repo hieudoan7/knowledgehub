@@ -53,3 +53,15 @@ export const getCurrentUser = async (): Promise<User> => {
 
   return response.data;
 };
+
+export const refresh = async (): Promise<LoginResponse> => {
+  const response = await apiClient.post<LoginResponse>(
+    "/auth/refresh"
+  );
+
+  return response.data;
+};
+
+export const logout = async (): Promise<void> => {
+  await apiClient.post("/auth/logout");
+};

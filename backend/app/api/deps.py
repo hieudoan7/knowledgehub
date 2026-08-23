@@ -25,6 +25,8 @@ from app.llm.base import LLMService
 from app.llm.factory import get_llm_service
 from app.services.chat import ChatService
 from app.repositories.chat_history import ChatHistoryRepository
+from app.repositories.refresh_token_session import RefreshTokenSessionRepository
+from app.services.refresh_token import RefreshTokenService
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -38,6 +40,21 @@ def get_user_repository(
     """Return a UserRepository instance."""
     return UserRepository(session)
 
+def get_refresh_token_session_repository(
+    session: Session = Depends(get_db),
+) -> RefreshTokenSessionRepository:
+    """Return a RefreshTokenSessionRepository instance."""
+
+    return RefreshTokenSessionRepository(session)
+
+def get_refresh_token_service(
+    repository: RefreshTokenSessionRepository = Depends(
+        get_refresh_token_session_repository,
+    ),
+) -> RefreshTokenService:
+    """Return a RefreshTokenService instance."""
+
+    return RefreshTokenService(repository)
 
 def get_auth_service(
     user_repository: UserRepository = Depends(get_user_repository),
