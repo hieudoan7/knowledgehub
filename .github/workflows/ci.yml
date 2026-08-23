@@ -166,7 +166,13 @@ jobs:
 
             git pull origin master
 
-            sed -i "s/^API_IMAGE_TAG=.*/API_IMAGE_TAG=${{ github.sha }}/" deploy/.env.prod
+            PREVIOUS_TAG=$(grep '^API_IMAGE_TAG=' deploy/.env.prod | cut -d= -f2)
+            NEW_TAG=${{ github.sha }}
+
+            echo "Previous image: $PREVIOUS_TAG"
+            echo "New image:      $NEW_TAG"
+
+            sed -i "s/^API_IMAGE_TAG=.*/API_IMAGE_TAG=$NEW_TAG/" deploy/.env.prod
 
             docker compose \
               --env-file deploy/.env.prod \
@@ -190,7 +196,19 @@ jobs:
               sleep 5
             done
 
-            echo "Deployment failed health check."
-            docker logs --tail 100 knowledgehub-api
+            echo "Deployment failed. Rolling back to $PREVIOUS_TAG"
+
+            sed -i "s/^API_IMAGE_TAG=.*/API_IMAGE_TAG=$PREVIOUS_TAG/" deploy/.env.prod
+
+            docker compose \
+              --env-file deploy/.env.prod \
+              -f docker-compose.prod.yml \
+              pull api
+
+            docker compose \
+              --env-file deploy/.env.prod \
+              -f docker-compose.prod.yml \
+              up -d --no-deps api
+
+            echo "Rollback complete."
             exit 1
-            
