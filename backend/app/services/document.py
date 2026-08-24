@@ -1,12 +1,15 @@
 from uuid import UUID
 
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from fastapi import BackgroundTasks
 from app.storage.base import StorageService
 from app.models.document import Document
 from app.models.enums import DocumentStatus
+from app.models.processing_job import ProcessingJob
 from app.repositories.document import DocumentRepository
+from app.repositories.processing_job import ProcessingJobRepository
 from app.schemas.document import DocumentCreate
 from app.exceptions.document import (
     FileTooLargeError,
@@ -28,10 +31,12 @@ class DocumentService:
         session: Session,
         document_repository: DocumentRepository,
         storage_service: StorageService,
+        processing_job_repository: ProcessingJobRepository,
     ) -> None:
         self.session = session
         self.document_repository = document_repository
         self.storage_service = storage_service
+        self.processing_job_repository = processing_job_repository
 
     def create(
         self,
@@ -101,8 +106,17 @@ class DocumentService:
 
         try:
             document = self.document_repository.create(document)
+
+            job = ProcessingJob(
+                document_id=document.id,
+                available_at=datetime.now(timezone.utc),
+            )
+
+            self.processing_job_repository.create(job)
+
             self.session.commit()
             self.session.refresh(document)
+
             background_tasks.add_task(
                 BackgroundTaskService.process_document,
                 document.id,

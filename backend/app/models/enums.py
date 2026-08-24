@@ -6,4 +6,10 @@ class DocumentStatus(str, Enum):
     PROCESSING = "processing"
     READY = "ready"
     FAILED = "failed"
-    
+
+
+class ProcessingJobStatus(str, Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"

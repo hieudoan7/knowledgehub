@@ -72,3 +72,11 @@ class Document(TimestampMixin, Base):
         back_populates="document",
         cascade="all, delete-orphan",
     )
+
+    processing_job = relationship(
+        "ProcessingJob",
+        back_populates="document",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    

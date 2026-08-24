@@ -27,6 +27,7 @@ from app.services.chat import ChatService
 from app.repositories.chat_history import ChatHistoryRepository
 from app.repositories.refresh_token_session import RefreshTokenSessionRepository
 from app.services.refresh_token import RefreshTokenService
+from app.repositories.processing_job import ProcessingJobRepository
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -135,10 +136,20 @@ def get_document_processing_service(
         embedding_service=embedding_service,
     )
 
+def get_processing_job_repository(
+    db: Session = Depends(get_db),
+) -> ProcessingJobRepository:
+    """Return a processing job repository instance."""
+
+    return ProcessingJobRepository(db)
+
 def get_document_service(
     db: Session = Depends(get_db),
     document_repository: DocumentRepository = Depends(get_document_repository),
     storage_service: StorageService = Depends(get_storage_service),
+        processing_job_repository: ProcessingJobRepository = Depends(
+        get_processing_job_repository,
+    ),
 ) -> DocumentService:
     """Return a document service instance."""
 
@@ -146,6 +157,7 @@ def get_document_service(
         session=db,
         document_repository=document_repository,
         storage_service=storage_service,
+        processing_job_repository=processing_job_repository,
     )
 
 def get_embeddings() -> EmbeddingService:
