@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import select
@@ -79,6 +79,40 @@ class ProcessingJobRepository(BaseRepository):
         job.status = ProcessingJobStatus.FAILED
         job.failed_at = failed_at
         job.error = error
+
+        self.session.flush()
+
+        return job
+    
+    def claim_next(self) -> ProcessingJob | None:
+        """Atomically claim the next available processing job."""
+
+        now = datetime.now(timezone.utc)
+
+        stmt = (
+            select(ProcessingJob)
+            .where(
+                ProcessingJob.status == ProcessingJobStatus.PENDING,
+                ProcessingJob.available_at <= now,
+            )
+            .order_by(
+                ProcessingJob.created_at,
+            )
+            .with_for_update(
+                skip_locked=True,
+            )
+            .limit(1)
+        )
+
+        job = self.session.scalar(stmt)
+
+        if job is None:
+            return None
+
+        job.status = ProcessingJobStatus.PROCESSING
+        job.attempts += 1
+        job.started_at = now
+        job.error = None
 
         self.session.flush()
 

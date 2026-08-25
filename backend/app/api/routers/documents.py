@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 
 from app.api.deps import (
     get_chat_history_repository,
@@ -47,7 +47,6 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
 )
 async def upload_document(
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
@@ -60,7 +59,6 @@ async def upload_document(
             original_filename=file.filename or "unknown",
             mime_type=file.content_type or "",
             content=await file.read(),
-            background_tasks=background_tasks,
         )
 
     except UnsupportedFileTypeError:

@@ -3,7 +3,6 @@ from uuid import UUID
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
-from fastapi import BackgroundTasks
 from app.storage.base import StorageService
 from app.models.document import Document
 from app.models.enums import DocumentStatus
@@ -21,7 +20,6 @@ from app.utils.file import (
     MAX_FILE_SIZE,
     generate_stored_filename,
 )
-from app.services.background_tasks import BackgroundTaskService
 
 class DocumentService:
     """Business logic for document management."""
@@ -73,7 +71,6 @@ class DocumentService:
         original_filename: str,
         mime_type: str,
         content: bytes,
-        background_tasks: BackgroundTasks,
     ) -> Document:
         """
         Upload a new document.
@@ -116,11 +113,6 @@ class DocumentService:
 
             self.session.commit()
             self.session.refresh(document)
-
-            background_tasks.add_task(
-                BackgroundTaskService.process_document,
-                document.id,
-            )
 
             return document
 
