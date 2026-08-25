@@ -46,5 +46,34 @@ services:
 
     restart: unless-stopped
 
+  worker:
+    image: ghcr.io/hieudoan7/knowledgehub-api:${API_IMAGE_TAG}
+    container_name: knowledgehub-worker
+
+    environment:
+      AWS_SHARED_CREDENTIALS_FILE: /app/.aws/credentials
+      AWS_CONFIG_FILE: /app/.aws/config
+      AWS_EC2_METADATA_DISABLED: "true"
+
+    env_file:
+      - ./deploy/.env.prod
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    volumes:
+      - ~/.aws/credentials:/app/.aws/credentials:ro
+      - ~/.aws/config:/app/.aws/config:ro
+
+    command:
+      [
+        "python",
+        "-m",
+        "app.worker"
+      ]
+      
 volumes:
   postgres_data:
