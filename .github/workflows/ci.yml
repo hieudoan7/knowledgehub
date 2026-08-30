@@ -193,7 +193,7 @@ jobs:
             echo "Waiting for API..."
 
             for i in {1..30}; do
-              if curl -fsS https://3-24-217-115.sslip.io/api/v1/health; then
+              if curl -fsS https://3-24-24-18.sslip.io/api/v1/health; then
                 echo "Deployment healthy."
                 exit 0
               fi
