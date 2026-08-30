@@ -5,6 +5,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 function Login() {
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1";
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -137,7 +140,7 @@ function Login() {
               type="button"
               onClick={() => {
                 window.location.href =
-                  "http://localhost:8000/api/v1/auth/google";
+                  `${API_BASE_URL}/auth/google`;
               }}
               className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
