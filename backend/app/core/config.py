@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
 
     debug: bool = False
-
+    
+    FRONTEND_URL: str = "http://localhost:5173"
+    
     # ------------------------------------------------------------------
     # Database
     # ------------------------------------------------------------------

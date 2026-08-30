@@ -230,7 +230,7 @@ async def google_callback(
         user_id=user.id,
     )
     redirect_response = RedirectResponse(
-        url="http://localhost:5173/oauth/callback"
+        url=f"{settings.FRONTEND_URL}/oauth/callback"
     )
 
     redirect_response.set_cookie(
