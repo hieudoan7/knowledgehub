@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Documents from "./pages/Documents";
 import Chat from "./pages/Chat";
+import OAuthCallback from "./pages/OAuthCallback";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
 
           {/* Authenticated application */}
           <Route element={<ProtectedRoute />}>

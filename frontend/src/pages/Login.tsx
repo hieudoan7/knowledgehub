@@ -126,6 +126,23 @@ function Login() {
             >
               {submitting ? "Signing in..." : "Sign in"}
             </button>
+
+            <div className="my-6 flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span className="text-xs text-slate-400">OR</span>
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+            
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href =
+                  "http://localhost:8000/api/v1/auth/google";
+              }}
+              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Continue with Google
+            </button>
           </form>
 
           <div className="mt-6 border-t border-slate-100 pt-6 text-center">

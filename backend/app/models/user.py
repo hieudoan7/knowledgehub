@@ -19,7 +19,7 @@ class User(UUIDMixin, TimestampMixin, Base):
 
     hashed_password: Mapped[str] = mapped_column(
         String(MAX_PASSWORD_HASH_LENGTH),
-        nullable=False,
+        nullable=True,
     )
 
     full_name: Mapped[str | None] = mapped_column(
@@ -43,4 +43,10 @@ class User(UUIDMixin, TimestampMixin, Base):
         "Document",
         back_populates="owner",
         cascade="all, delete-orphan",    
+    )
+
+    oauth_accounts = relationship(
+        "OAuthAccount",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )

@@ -21,15 +21,17 @@ WORKDIR /app
 # Copy dependency files first for better Docker layer caching
 COPY pyproject.toml uv.lock* ./
 
-# Install project dependencies
-RUN uv sync --frozen --no-dev
-
 RUN useradd --create-home --shell /bin/bash appuser
+
+# Install project dependencies
+RUN uv sync --frozen --no-dev --no-install-project
 
 # Copy the application source
 COPY . .
 
-RUN chown -R appuser:appuser /app
+# Install project and fix ownership
+RUN uv sync --frozen --no-dev \
+    && chown -R appuser:appuser /app
 
 USER appuser
 

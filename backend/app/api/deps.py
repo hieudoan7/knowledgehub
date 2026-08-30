@@ -28,6 +28,8 @@ from app.repositories.chat_history import ChatHistoryRepository
 from app.repositories.refresh_token_session import RefreshTokenSessionRepository
 from app.services.refresh_token import RefreshTokenService
 from app.repositories.processing_job import ProcessingJobRepository
+from app.repositories.oauth_account import OAuthAccountRepository
+from app.services.oauth import OAuthService
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -40,6 +42,13 @@ def get_user_repository(
 ) -> UserRepository:
     """Return a UserRepository instance."""
     return UserRepository(session)
+
+def get_oauth_account_repository(
+    session: Session = Depends(get_db),
+) -> OAuthAccountRepository:
+    """Return an OAuthAccountRepository instance."""
+
+    return OAuthAccountRepository(session)
 
 def get_refresh_token_session_repository(
     session: Session = Depends(get_db),
@@ -63,6 +72,18 @@ def get_auth_service(
     """Return an AuthService instance."""
     return AuthService(user_repository)
 
+def get_oauth_service(
+    user_repository: UserRepository = Depends(get_user_repository),
+    oauth_account_repository: OAuthAccountRepository = Depends(
+        get_oauth_account_repository,
+    ),
+) -> OAuthService:
+    """Return an OAuthService instance."""
+
+    return OAuthService(
+        user_repository=user_repository,
+        oauth_account_repository=oauth_account_repository,
+    )
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),

@@ -11,7 +11,7 @@ class UserRepository(BaseRepository):
 
     session: Session
 
-    def get_by_id(self, user_id: UUID) -> User | None:
+    def get_by_id(self, user_id: str) -> User | None:
         """Retrieve a user by ID."""
 
         stmt = select(User).where(User.id == user_id)

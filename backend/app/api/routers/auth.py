@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Cookie, Response
 from app.api.deps import get_refresh_token_service
 from app.core.config import settings
+from app.core.oauth import oauth
 from app.exceptions.auth import InvalidTokenError
 from app.services.refresh_token import RefreshTokenService
 
@@ -15,6 +17,8 @@ from app.exceptions.auth import (
 from app.schemas.auth import UserLogin, UserRegister, TokenResponse
 from app.schemas.user import UserResponse
 from app.services.auth import AuthService
+from app.services.oauth import OAuthService
+from app.api.deps import get_oauth_service
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -178,3 +182,65 @@ def token(
     return TokenResponse(
         access_token=access_token,
     )
+
+
+@router.get("/google")
+async def google_login(request: Request):
+    """Redirect the user to Google's OAuth consent screen."""
+
+    redirect_uri = request.url_for("google_callback")
+
+    return await oauth.google.authorize_redirect(
+        request,
+        redirect_uri,
+    )
+
+
+@router.get("/google/callback")
+async def google_callback(
+    request: Request,
+    oauth_service: OAuthService = Depends(get_oauth_service),
+    refresh_token_service: RefreshTokenService = Depends(
+        get_refresh_token_service,
+    ),
+):
+    """Handle Google's OAuth callback."""
+
+    token = await oauth.google.authorize_access_token(request)
+
+    userinfo = token["userinfo"]
+    if not userinfo.get("email_verified"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Google email address is not verified.",
+        )
+
+    google_user_id = userinfo["sub"]
+    email = userinfo["email"]
+    full_name = userinfo.get("name")
+
+    user = oauth_service.authenticate(
+        provider="google",
+        provider_user_id=google_user_id,
+        email=email,
+        full_name=full_name,
+    )
+
+    refresh_token = refresh_token_service.create(
+        user_id=user.id,
+    )
+    redirect_response = RedirectResponse(
+        url="http://localhost:5173/oauth/callback"
+    )
+
+    redirect_response.set_cookie(
+        key=settings.REFRESH_TOKEN_COOKIE_NAME,
+        value=refresh_token,
+        httponly=True,
+        secure=settings.REFRESH_TOKEN_COOKIE_SECURE,
+        samesite=settings.REFRESH_TOKEN_COOKIE_SAMESITE,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/api/v1/auth",
+    )
+
+    return redirect_response
