@@ -1,28 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import apiClient from "../api/client";
 
 function OAuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const completeLogin = async () => {
-      try {
-        const response = await apiClient.post("/auth/refresh");
-
-        localStorage.setItem(
-          "access_token",
-          response.data.access_token,
-        );
-
-        navigate("/documents", { replace: true });
-      } catch (error) {
-        console.error("OAuth login failed:", error);
-        navigate("/login", { replace: true });
-      }
-    };
-
-    completeLogin();
+    navigate("/documents", { replace: true });
   }, [navigate]);
 
   return (
