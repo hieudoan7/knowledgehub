@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import UUID
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class ChatRequest(BaseModel):
@@ -20,6 +20,8 @@ class ChatResponse(BaseModel):
 
 
 class ChatHistoryItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: UUID
     question: str
     answer: str
