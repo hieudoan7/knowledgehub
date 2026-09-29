@@ -30,6 +30,7 @@ from app.services.refresh_token import RefreshTokenService
 from app.repositories.processing_job import ProcessingJobRepository
 from app.repositories.oauth_account import OAuthAccountRepository
 from app.services.oauth import OAuthService
+from app.services.dashboard import DashboardService
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -230,5 +231,20 @@ def get_chat_service(
         session=session,
         search_service=search_service,
         llm_service=llm_service,
+        chat_history_repository=chat_history_repository,
+    )
+
+def get_dashboard_service(
+    document_repository: DocumentRepository = Depends(
+        get_document_repository,
+    ),
+    chat_history_repository: ChatHistoryRepository = Depends(
+        get_chat_history_repository,
+    ),
+) -> DashboardService:
+    """Return a dashboard service instance."""
+    
+    return DashboardService(
+        document_repository=document_repository,
         chat_history_repository=chat_history_repository,
     )
