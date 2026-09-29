@@ -23,6 +23,7 @@ class ChatHistoryItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
     id: UUID
+    document_id: UUID
     question: str
     answer: str
     sources: list[ChatSource]
