@@ -1,284 +1,297 @@
-import { useEffect, useState, useRef, type FormEvent } from "react";
+import { Plus, BrainCircuit, Send, ChevronDown } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { getDocuments, chatWithDocument } from '../api/client'
+import { useLocation } from 'react-router-dom'
 
-import { Link, useParams } from "react-router-dom";
+type ChatDocument = {
+  id: string
+  original_filename: string
+}
 
-import {
-  chatWithDocument,
-  getDocument,
-  getChatHistory,
-  type Document,
-  type ChatHistoryItem,
-} from "../api/documents";
+type ChatMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  sources?: {
+    chunk_index: number
+    score: number
+  }[]
+}
 
-function Chat() {
-  const { documentId } = useParams<{
-    documentId: string;
-  }>();
+export default function Chat() {
+  const location = useLocation()
+  const documentIdFromNavigation = location.state?.documentId;
 
-  const [document, setDocument] = useState<Document | null>(null);
-  const [question, setQuestion] = useState("");
-  const [messages, setMessages] = useState<ChatHistoryItem[]>([]);
+  const { accessToken } = useAuth()
 
-  const [loading, setLoading] = useState(true);
-  const [asking, setAsking] = useState(false);
-  const [error, setError] = useState("");
-  
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [documents, setDocuments] = useState<ChatDocument[]>([])
+  const [selectedDocumentId, setSelectedDocumentId] = useState('')
+  const [, setLoadingDocuments] = useState(true)
+  const [documentError, setDocumentError] = useState('')
+  const [isDocumentMenuOpen, setIsDocumentMenuOpen] = useState(false)
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [query, setQuery] = useState('')
+  const [sending, setSending] = useState(false)
+  const [chatError, setChatError] = useState('')
+  const requestIdRef = useRef(0)
 
   useEffect(() => {
-    const loadDocument = async () => {
-      if (!documentId) {
-        setError("Document not found.");
-        setLoading(false);
+    if (!accessToken) {
+      setLoadingDocuments(false)
+      setDocumentError('Authentication token is unavailable')
+      return
+    }
+
+    let cancelled = false
+
+    async function loadDocuments() {
+      try {
+        const data: ChatDocument[] = await getDocuments(accessToken!)
+
+        if (!cancelled) {
+          setDocuments(data)
+
+          if (data.length > 0) {
+            const requestedDocument = data.find(
+              (doc) => doc.id === documentIdFromNavigation
+            );
+            
+            setSelectedDocumentId(
+              requestedDocument?.id ?? data[0]?.id ?? ""
+            );
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setDocumentError('Failed to load documents.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingDocuments(false)
+        }
+      }
+    }
+
+    loadDocuments()
+
+    return () => {
+      cancelled = true
+    }
+  }, [accessToken])
+
+  useEffect(() => {
+    requestIdRef.current += 1
+    setMessages([]);
+  }, [selectedDocumentId]);
+
+  async function handleSendMessage() {
+    const trimmedQuery = query.trim()
+  
+    if (!trimmedQuery || !selectedDocumentId || !accessToken || sending) {
+      return
+    }
+  
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: trimmedQuery,
+    }
+  
+    setMessages((prev) => [...prev, userMessage])
+    setQuery('')
+    setSending(true)
+    setChatError('')
+  
+    try {
+      const requestId = requestIdRef.current;
+      const response = await chatWithDocument(
+        selectedDocumentId,
+        trimmedQuery,
+        accessToken
+      )
+      if (requestId !== requestIdRef.current) {
         return;
       }
-
-      try {
-        const data = await getDocument(documentId);
-        setDocument(data);
-
-        const history = await getChatHistory(documentId);
-        setMessages(history);
-      } catch {
-        setError("Failed to load document.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDocument();
-  }, [documentId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages]);
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-
-    if (!documentId || !question.trim()) {
-      return;
-    }
-
-    setError("");
-    setAsking(true);
-
-    try {
-      const currentQuestion = question.trim();
-
-      const data = await chatWithDocument(
-        documentId,
-        currentQuestion
-      );
-
-      const newMessage: ChatHistoryItem = {
+  
+      const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
-        question: currentQuestion,
-        answer: data.answer,
-        sources: data.sources,
-        created_at: new Date().toISOString(),
-      };
-
-      setMessages((previous) => [
-        ...previous,
-        newMessage,
-      ]);
-
-      setQuestion("");
+        role: 'assistant',
+        content: response.answer,
+        sources: response.sources,
+      }
+  
+      setMessages((prev) => [...prev, assistantMessage])
     } catch {
-      setError("Failed to get an answer.");
+      setChatError('Failed to get an AI response. Please try again.')
     } finally {
-      setAsking(false);
+      setSending(false)
     }
+  }
+  const handleNewChat = () => {
+    setMessages([]);
+    setChatError("");
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[500px] items-center justify-center">
-        <p className="text-sm text-slate-500">
-          Loading document...
-        </p>
-      </div>
-    );
-  }
-
-  if (error && !document) {
-    return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6">
-        <Link
-          to="/documents"
-          className="text-sm font-medium text-slate-700 hover:text-slate-900"
-        >
-          ← Back to documents
-        </Link>
-
-        <p className="mt-4 text-sm text-red-700">
-          {error}
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-[calc(100vh-9rem)] flex-col">
-      {/* Document header */}
-      <div className="mb-4 flex shrink-0 items-center gap-4 border-b border-slate-200 pb-4">
-        <Link
-          to="/documents"
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100"
-          aria-label="Back to documents"
-        >
-          ←
-        </Link>
-  
-        <div className="min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            Document
-          </p>
-  
-          <h1 className="truncate text-lg font-bold text-slate-900">
-            {document?.original_filename}
+    <div className="px-10 py-8 flex flex-col gap-5">
+      {/* Page header */}
+      <section className="flex items-center justify-between">
+        {/* Heading */}
+        <div className="flex flex-col gap-2">
+          <h1 className="text-4xl font-semibold leading-10 text-text-primary">
+            AI Chat
           </h1>
+
+          <p className="text-lg text-text-secondary">
+            Ask questions about your documents
+          </p>
+        </div>
+
+        {/* New Chat button */}
+        <button
+          type="button"
+          className="flex items-center gap-3 rounded-lg border border-border-default bg-surface-default px-4 py-3 text-base font-medium text-text-primary hover:bg-surface-sidebar"
+          onClick={handleNewChat}
+        >
+          <Plus className="h-5 w-5" />
+          New Chat
+        </button>
+      </section>
+
+      {/* Document selector */}
+      <div className="flex items-center gap-3">
+        <label
+          htmlFor="chat-document"
+          className="text-sm font-medium text-text-primary"
+        >
+          Chat with document:
+        </label>
+
+        <div className="relative w-72">
+          {/* Dropdown trigger */}
+          <button
+            type="button"
+            onClick={() =>
+              setIsDocumentMenuOpen((prev) => !prev)
+            }
+            className="flex w-full items-center justify-between rounded-xl border border-border-default bg-surface-default px-3 py-2.5 text-sm text-text-primary"
+          >
+            <span className="truncate">
+              {documents.find(
+                (doc) => doc.id === selectedDocumentId
+              )?.original_filename ?? 'Select a document'}
+            </span>
+
+            <ChevronDown className="h-4 w-4 shrink-0" />
+          </button>
+
+          {/* Dropdown options */}
+          {isDocumentMenuOpen && (
+            <div className="absolute left-0 top-full z-20 mt-2 w-full rounded-xl border border-border-default bg-surface-default p-1 shadow-lg">
+              {documents.map((document) => (
+                <button
+                  key={document.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedDocumentId(document.id)
+                    setIsDocumentMenuOpen(false)
+                  }}
+                  className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-text-primary hover:bg-surface-sidebar"
+                >
+                  <span className="truncate">
+                    {document.original_filename}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-  
-      {/* Conversation */}
-      <section className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl space-y-8 px-2 py-4">
-          {messages.length === 0 ? (
-            <div className="flex min-h-[400px] items-center justify-center">
-              <div className="max-w-md text-center">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-2xl text-white">
-                  ✦
+
+      {documentError && (
+        <p className="text-sm text-red-600">
+          {documentError}
+        </p>
+      )}
+
+      {/* Chat container */}
+      <section className="flex h-[calc(100vh-220px)] min-h-[560px] flex-col rounded-2xl border border-border-default bg-surface-default p-3">
+
+        {/* Conversation area */}
+        <div className="flex-1 p-6">
+          {messages.map((message) => (
+            <div key={message.id}>
+              {message.role === "user" ? (
+                // User message
+                <div className="flex justify-end">
+                  <div className="max-w-[75%] rounded-lg bg-brand-primary px-4 py-3 text-text-on-brand">
+                    {message.content}
+                  </div>
                 </div>
-  
-                <h2 className="text-xl font-semibold text-slate-900">
-                  Ask anything about this document
-                </h2>
-  
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                  KnowledgeHub will search the document and
-                  use the relevant content to generate an
-                  answer.
+              ) : (
+                // AI response
+                <div className="flex justify-start items-center gap-2">
+                  <BrainCircuit className='h-5 w-5 text-text-primary'/>
+                  <div className="max-w-[75%] rounded-lg bg-surface-sidebar px-4 py-3 text-text-primary">
+                    {message.content}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          {chatError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              {chatError}
+            </div>
+          )}
+          {sending && (
+            <div className="flex justify-start">
+              <div className="rounded-lg bg-surface-sidebar px-4 py-3">
+                <p className="text-sm text-text-secondary animate-pulse">
+                  AI is thinking...
                 </p>
               </div>
             </div>
-          ) : (
-            messages.map((message) => (
-              <article
-                key={message.id}
-                className="space-y-5"
-              >
-                {/* User question */}
-                <div className="flex justify-end">
-                  <div className="max-w-[75%]">
-                    <div className="mb-1 text-right text-xs font-medium text-slate-400">
-                      You
-                    </div>
-  
-                    <div className="rounded-2xl rounded-tr-md bg-slate-900 px-5 py-3 text-sm leading-6 text-white">
-                      {message.question}
-                    </div>
-                  </div>
-                </div>
-  
-                {/* AI answer */}
-                <div className="flex justify-start">
-                  <div className="w-full max-w-3xl">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-400">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-900 text-xs text-white">
-                        ✦
-                      </span>
-  
-                      KnowledgeHub
-                    </div>
-  
-                    <div className="rounded-2xl rounded-tl-md border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                      <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                        {message.answer}
-                      </p>
-  
-                      {/* Sources */}
-                      <div className="mt-5 border-t border-slate-100 pt-4">
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          Sources
-                        </p>
-  
-                        {message.sources.length === 0 ? (
-                          <p className="text-sm text-slate-400">
-                            No sources returned.
-                          </p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {message.sources.map(
-                              (source, index) => (
-                                <div
-                                  key={`${message.id}-${source.chunk_index}-${index}`}
-                                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
-                                >
-                                  <span className="text-xs font-medium text-slate-700">
-                                    Chunk {source.chunk_index}
-                                  </span>
-  
-                                  <span className="ml-2 text-xs text-slate-400">
-                                    {source.score.toFixed(3)}
-                                  </span>
-                                </div>
-                              )
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            ))
-          )}
-          <div ref={messagesEndRef} />
+          )
+          }
         </div>
-      </section>
-  
-      {/* Error */}
-      {error && (
-        <div className="mx-auto mt-3 w-full max-w-4xl shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-  
-      {/* Question input */}
-      <form onSubmit={handleSubmit} className="shrink-0 border-t border-slate-200 bg-slate-50 py-4">
-        <div className="mx-auto w-full max-w-4xl">
-          <div className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white p-2 shadow-sm focus-within:border-slate-500 focus-within:ring-2 focus-within:ring-slate-100">
+
+        {/* Message input area */}
+        <div className="border-t border-border-default p-3">
+          <div className="flex items-center rounded-lg border border-border-default px-3">
+
             <input
               type="text"
-              value={question}
-              onChange={(event) =>
-                setQuestion(event.target.value)
-              }
-              placeholder="Ask a question about this document..."
-              disabled={asking}
-              className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+              placeholder="Ask a question about your documents..."
+              className="h-11 min-w-0 flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
+              value={query}
+              onChange={(e)=>setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
             />
-  
-            <button
-              type="submit"
-              disabled={asking || !question.trim()}
-              className="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              {asking ? "Thinking..." : "Ask →"}
-            </button>
-          </div>
-  
-          <p className="mt-2 text-center text-xs text-slate-400">
-            Answers are generated from the contents of this document.
-          </p>
-        </div>
-      </form>
-    </div>
-  );
-}
 
-export default Chat;
+            <button
+              type="button"
+              aria-label="Send message"
+              className="flex h-9 w-9 shrink-0 items-center justify-center text-brand-primary"
+              disabled={!query.trim() || sending || !selectedDocumentId}
+              onClick={handleSendMessage}
+            >
+              <Send className="h-5 w-5" />
+            </button>
+
+          </div>
+        </div>
+      </section>
+
+    </div>
+  )
+}

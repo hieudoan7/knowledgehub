@@ -1,168 +1,193 @@
-import { useState } from "react";
-import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from 'react'
+import { ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { getCurrentUser, login } from '../api/client'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import googleIcon from '../assets/google-icon.png'
 
-import { useAuth } from "../context/useAuth";
+export default function Login() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const { setUser, setAccessToken } = useAuth()
+  const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [isSubmiting, setIsSubmiting] = useState(false)
 
-function Login() {
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1";
-
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-
-    setError("");
-    setSubmitting(true);
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError('')
+    if (!email.trim()) {
+      setError('Email is required.')
+      return
+    }
+  
+    if (!password) {
+      setError('Password is required.')
+      return
+    }
+    setIsSubmiting(true)
 
     try {
-      await login({
-        email,
-        password,
-      });
+      const { access_token } = await login(email, password)
+      const user = await getCurrentUser(access_token);
 
-      navigate("/documents");
-    } catch {
-      setError("Invalid email or password.");
+      setAccessToken(access_token)
+      setUser(user)
+      navigate('/dashboard')
+
+    } catch (error) {
+      setError("Invalid email or password.")
+      console.error(error)
     } finally {
-      setSubmitting(false);
+      setIsSubmiting(false)
     }
-  };
+  }
 
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md">
-        {/* Brand */}
-        <div className="mb-8 text-center">
-          <Link
-            to="/login"
-            className="text-2xl font-bold tracking-tight text-slate-900"
-          >
-            KnowledgeHub
-          </Link>
+  return(
+    <main className="min-h-screen flex">
+      <section className="w-[55%] bg-surface-sidebar flex items-center px-16">
+        {/*Left branding section*/}
+        <div className="max-w-xl flex flex-col">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-brand-primary"/>
+            <span className="text-2xl font-semibold text-text-primary">
+                KnowledgeHub
+              </span>
+          </div>
 
-          <p className="mt-2 text-sm text-slate-500">
-            Ask questions about your documents with AI.
+          {/* Headline */}
+          <h1 className="mt-12 text-4xl font-semibold text-text-primary">
+            Your knowledge, intelligently connected.
+          </h1>
+          {/* Supporting text */}
+          <p className="mt-4 text-lg text-text-secondary">
+            Upload documents, search your knowledge base, and get answers powered by AI.
           </p>
+          {/* Knowledge Flow */}
+          <div className="mt-12">
+            <h2 className="text-lg font-semibold text-text-primary">
+              Knowledge Flow
+            </h2>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="w-[180px] rounded-xl border border-border-default bg-surface-default p-5">
+                <h3 className="text-lg font-semibold text-text-primary">
+                  Documents
+                </h3>
+                <p className="mt-2 text-base text-text-secondary">
+                  Upload and organize your documents.
+                </p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-brand-primary" />
+              <div className="w-[180px] rounded-xl border border-border-default bg-surface-default p-5">
+                <h3 className="text-lg font-semibold text-text-primary">
+                  Knowledge
+                </h3>
+                <p className="mt-2 text-base text-text-secondary">
+                  Connect and search your knowledge.
+                </p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-brand-primary" />
+              <div className="w-[180px] rounded-xl border border-border-default bg-surface-default p-5">
+                <h3 className="text-lg font-semibold text-text-primary">
+                  AI Answer
+                </h3>
+                <p className="mt-2 text-base text-text-secondary">
+                  Get intelligent answers from your data.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Login card */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-slate-900">
+      </section>
+      <section className="w-[45%] bg-surface-default flex items-center jusify-center px-16">
+        {/*Right authentication section*/}
+        <form className="w-full max-w-[400px]" onSubmit={handleSubmit}>
+          <div>
+            <h1 className='text-[32px] font-semibold leading-10 text-text-primary'>
               Welcome back
             </h1>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Sign in to continue to your documents.
+            <p className='mt-2 text-lg leading-7 text-text-secondary'>
+              Sign in to continue KnowledgeHub
             </p>
           </div>
-
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
+          <div className="mt-8 flex flex-col gap-6">
             <div>
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
+              <label htmlFor="email"
+              className='text-sm font-medium text-text-primary'>
                 Email
               </label>
-
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(event) =>
-                  setEmail(event.target.value)
-                }
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100"
+              <input 
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              onChange={(event) => setEmail(event.target.value)}
+              disabled={isSubmiting}
+              className='mt-2 w-full rounded-lg border border-border-default bg-surface-default px-4 py-3 text-base text-text-primary outline-none'
               />
             </div>
-
             <div>
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
+              <label htmlFor="password"
+              className='text-sm font-medium text-text-primary'>
                 Password
               </label>
-
-              <input
+              <div className="relative mt-2">
+                <input 
                 id="password"
-                type="password"
-                value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
+                type={showPassword? 'text': "password"}
                 placeholder="Enter your password"
-                autoComplete="current-password"
-                required
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100"
-              />
-            </div>
-
-            {error && (
-              <div
-                role="alert"
-                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-              >
-                {error}
+                onChange={(event) => setPassword(event.target.value)}
+                disabled={isSubmiting}
+                className='mt-2 w-full rounded-lg border border-border-default bg-surface-default px-4 py-3 pr-12 text-base text-text-primary outline-none'
+                />
+                <button
+                  type="button"
+                  onClick={()=>setShowPassword(!showPassword)}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary'
+                >
+                  {showPassword? (<EyeOff className="h-5 w-5"/>): (<Eye className='h-5 w-5'/>)}
+                </button>
               </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              {submitting ? "Signing in..." : "Sign in"}
-            </button>
-
-            <div className="my-6 flex items-center gap-3">
-              <div className="h-px flex-1 bg-slate-200" />
-              <span className="text-xs text-slate-400">OR</span>
-              <div className="h-px flex-1 bg-slate-200" />
             </div>
-            
+            <div className='min-h-5'>
+              {error && (
+                <p className='text-sm text-error-text'>
+                  {error}
+                </p>
+              )}
+            </div>
+            <button
+                type="submit"
+                disabled={isSubmiting}
+                className="w-full rounded-lg bg-brand-primary px-4 py-3 text-sm font-medium text-white transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
+            >
+                {isSubmiting? "Signing in...": "Sign In"}
+            </button>
+            {/* Divider */}
+            <div className="flex items-center gap-4">
+              <div className="h-px flex-1 bg-border-default"/>
+              <span className='text-sm text-text-secondary'>or</span>
+              <div className='h-px flex-1 bg-border-default'/>
+            </div>
             <button
               type="button"
-              onClick={() => {
-                window.location.href =
-                  `${API_BASE_URL}/auth/google`;
-              }}
-              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="flex w-full items-center justify-center gap-3 rounded-lg border border-border-default bg-surface-default px-4 py-3 text-sm font-medium text-text-primary transition hover:bg-surface-sidebar focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
             >
-              Continue with Google
+              <img src={googleIcon} alt="" className='h-5 w-8.5' />
+                Continue with Google
             </button>
-          </form>
-
-          <div className="mt-6 border-t border-slate-100 pt-6 text-center">
-            <p className="text-sm text-slate-500">
-              Don't have an account?{" "}
-              <Link
-                to="/register"
-                className="font-medium text-slate-900 hover:underline"
-              >
-                Create an account
-              </Link>
+            <p className='text-center text-sm text-text-secondary'>
+              Don't have an account?{' '}
+              <a href='#' className='font-medium text-brand-primary'>
+                Sign up
+              </a>
             </p>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
 
-export default Login;
+          </div>
+        </form>
+
+      </section>
+    </main>
+  )
+}
