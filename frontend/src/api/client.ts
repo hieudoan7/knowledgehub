@@ -21,6 +21,40 @@ export async function login(email: string, password: string){
     return response.json();
 }
 
+export async function register(
+    email: string,
+    password: string,
+    fullName?: string,
+) {
+    const body: { email: string; password: string; full_name?: string } = {
+        email,
+        password,
+    };
+    const trimmedName = fullName?.trim();
+    if (trimmedName) {
+        body.full_name = trimmedName;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+            "Content-type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        const detail =
+            error && typeof error.detail === "string"
+                ? error.detail
+                : "Registration failed.";
+        throw new Error(detail);
+    }
+
+    return response.json();
+}
+
 export async function refresh() {
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: "POST",
