@@ -66,6 +66,13 @@ export async function refresh() {
     return response.json();
 }
 
+export async function logout() {
+    await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+    });
+}
+
 export async function getCurrentUser(accessToken: string) {
     const response = await fetch(`${API_BASE_URL}/users/me`, {
         method: "GET",

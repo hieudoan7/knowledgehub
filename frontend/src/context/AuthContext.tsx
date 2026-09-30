@@ -1,6 +1,5 @@
-
 import { createContext, useContext, useState, useEffect } from "react";
-import { refresh, getCurrentUser } from "../api/client";
+import { refresh, getCurrentUser, logout as logoutApi } from "../api/client";
 
 type User = {
     email: string;
@@ -12,6 +11,7 @@ type AuthContextType = {
     loading: boolean;
     setUser: (user: User | null) => void;
     setAccessToken: (token: string | null) => void;
+    logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(
@@ -44,6 +44,13 @@ export function AuthProvider({
         }
     }
 
+    async function logout() {
+        await logoutApi();
+    
+        setAccessToken(null);
+        setUser(null);
+    }
+
     useEffect(() => {
         checkAuth();
     }, []);
@@ -56,6 +63,7 @@ export function AuthProvider({
                 loading,
                 setUser,
                 setAccessToken,
+                logout,
             }}
         >
             {children}

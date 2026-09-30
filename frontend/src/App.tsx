@@ -7,13 +7,18 @@ import Documents from './pages/Documents.tsx'
 import Chat from './pages/Chat'
 import Settings from './pages/Settings.tsx'
 import AppLayout from './components/layout/AppLayout.tsx'
+import PublicRoute from './components/auth/PublicRoute.tsx'
+import OAuthCallback from './pages/OAuthCallback.tsx'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>

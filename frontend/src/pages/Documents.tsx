@@ -174,7 +174,8 @@ export default function Documents() {
         </div>
         <button 
           type="button"
-          className="flex items-center rounded-lg bg-brand-primary px-4 py-3 text-sm font-medium text-text-on-brand gap-2"
+          className="flex items-center rounded-lg bg-brand-primary px-4 py-3 text-sm font-medium text-text-on-brand gap-2 
+          transition-colors duration-200 hover:text-text-primary cursor-pointer"
           disabled={uploading}
           onClick={()=>fileInputRef.current?.click()}
         >

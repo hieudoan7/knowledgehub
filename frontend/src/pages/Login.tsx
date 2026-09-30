@@ -44,6 +44,11 @@ export default function Login() {
     }
   }
 
+  const handleGoogleLogin = () => {
+    window.location.href =
+      `${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1"}/auth/google`
+  }
+
   return(
     <main className="min-h-screen flex">
       <section className="w-[55%] bg-surface-sidebar flex items-center px-16">
@@ -172,6 +177,7 @@ export default function Login() {
             </div>
             <button
               type="button"
+              onClick={handleGoogleLogin}
               className="flex w-full items-center justify-center gap-3 rounded-lg border border-border-default bg-surface-default px-4 py-3 text-sm font-medium text-text-primary transition hover:bg-surface-sidebar focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
             >
               <img src={googleIcon} alt="" className='h-5 w-8.5' />
