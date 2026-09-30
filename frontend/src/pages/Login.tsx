@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { getCurrentUser, login } from '../api/client'
 import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import googleIcon from '../assets/google-icon.png'
 
 export default function Login() {
@@ -179,9 +179,9 @@ export default function Login() {
             </button>
             <p className='text-center text-sm text-text-secondary'>
               Don't have an account?{' '}
-              <a href='#' className='font-medium text-brand-primary'>
+              <Link to="/register" className='font-medium text-brand-primary'>
                 Sign up
-              </a>
+              </Link>
             </p>
 
           </div>
