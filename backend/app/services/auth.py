@@ -1,3 +1,4 @@
+from uuid import uuid4
 from app.core.security import hash_password, verify_password
 from app.exceptions.auth import (
     AuthenticationError,
@@ -51,3 +52,16 @@ class AuthService:
             raise AuthenticationError("Invalid email or password.")
 
         return user
+
+    def create_guest_user(self) -> User:
+        """Create a new guest user."""
+        user = User(
+            email=f"guest-{uuid4()}@guest.knowledgehub",
+            full_name="Guest",
+            is_guest=True,
+        )
+        self.user_repository.create(user)
+        self.user_repository.session.commit()
+        self.user_repository.session.refresh(user)
+        return user
+    

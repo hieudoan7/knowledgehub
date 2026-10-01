@@ -87,6 +87,42 @@ def login(
         access_token=access_token,
     )
 
+@router.post(
+    "/guest",
+    response_model=TokenResponse,
+)
+def guest(
+    response: Response,
+    auth_service: AuthService = Depends(get_auth_service),
+    refresh_token_service: RefreshTokenService = Depends(
+        get_refresh_token_service,
+    ),
+) -> TokenResponse:
+    """Create a guest session."""
+
+    user = auth_service.create_guest_user()
+
+    access_token = create_access_token(
+        subject=str(user.id),
+    )
+
+    refresh_token = refresh_token_service.create(
+        user_id=user.id,
+    )
+
+    response.set_cookie(
+        key=settings.REFRESH_TOKEN_COOKIE_NAME,
+        value=refresh_token,
+        httponly=True,
+        secure=settings.REFRESH_TOKEN_COOKIE_SECURE,
+        samesite=settings.REFRESH_TOKEN_COOKIE_SAMESITE,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/api/v1/auth",
+    )
+
+    return TokenResponse(
+        access_token=access_token,
+    )
 
 @router.post(
     "/refresh",
