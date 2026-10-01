@@ -38,7 +38,7 @@ export default function Dashboard() {
       {/* Welcome Section */}
       <section className="flex flex-col gap-2">
         <h1 className="text-4xl font-semibold leading-10 text-text-primary">
-          Good morning, Minh 👋
+          Good day, mate 👋
         </h1>
         <p className="text-base text-text-secondary">
           Here's what's happening with your knowledge base.
