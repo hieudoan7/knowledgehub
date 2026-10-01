@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { refresh, getCurrentUser, logout as logoutApi } from "../api/client";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
+import { refresh, createGuest, getCurrentUser, logout as logoutApi } from "../api/client";
 
 type User = {
     email: string;
@@ -26,6 +26,7 @@ export function AuthProvider({
     const [user, setUser] = useState<User | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const authCheckStarted = useRef(false);
 
     async function checkAuth() {
         try {
@@ -37,8 +38,24 @@ export function AuthProvider({
             setAccessToken(access_token);
             setUser(currentUser);
         } catch {
-            setAccessToken(null);
-            setUser(null);
+            try {
+                console.log("Refresh failed, creating guest session");
+
+                const guestResponse = await createGuest();
+                console.log("Guest session created", guestResponse);
+
+                const { access_token } = guestResponse;
+    
+                const guestUser = await getCurrentUser(access_token);
+                console.log("Guest user", guestUser);
+
+                setAccessToken(access_token);
+                setUser(guestUser);
+            } catch (error) {
+                console.error("Guest session failed", error);
+                setAccessToken(null);
+                setUser(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -51,10 +68,18 @@ export function AuthProvider({
         setUser(null);
     }
 
+    // useEffect(() => {
+    //     checkAuth();
+    // }, []);
     useEffect(() => {
+        if (authCheckStarted.current) {
+            return;
+        }
+
+        authCheckStarted.current = true;
         checkAuth();
     }, []);
-
+    
     return (
         <AuthContext.Provider
             value={{

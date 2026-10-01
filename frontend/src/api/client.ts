@@ -66,6 +66,19 @@ export async function refresh() {
     return response.json();
 }
 
+export async function createGuest() {
+    const response = await fetch(`${API_BASE_URL}/auth/guest`, {
+        method: "POST",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to create guest session");
+    }
+
+    return response.json();
+}
+
 export async function logout() {
     await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
