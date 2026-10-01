@@ -7,7 +7,7 @@ function AppLayout() {
     <div className="min-h-screen flex">
       <Sidebar/>
 
-      <main className="flex-1 bg-surface-default">
+      <main className="flex min-h-screen flex-1 flex-col bg-surface-default">
         <Header/>
         <Outlet/>
       </main>

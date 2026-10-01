@@ -134,7 +134,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="px-10 py-8 flex flex-col gap-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-5 px-10 py-8">
       {/* Page header */}
       <section className="flex items-center justify-between">
         {/* Heading */}
@@ -216,10 +216,10 @@ export default function Chat() {
       )}
 
       {/* Chat container */}
-      <section className="flex h-[calc(100vh-220px)] min-h-[560px] flex-col rounded-2xl border border-border-default bg-surface-default p-3">
+      <section className="flex min-h-0 flex-1 flex-col rounded-2xl border border-border-default bg-surface-default p-3">
 
         {/* Conversation area */}
-        <div className="flex-1 p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {messages.map((message) => (
             <div key={message.id}>
               {message.role === "user" ? (
