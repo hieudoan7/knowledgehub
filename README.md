@@ -131,6 +131,10 @@ Highlights include:
                       AI Response
 ```
 ---
+# Database Diagram
+![database_diagram](docs/db_diagram.png)
+
+---
 # Production Deployment
 
 ```text
