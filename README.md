@@ -13,7 +13,9 @@
 
 Upload your own documents and ask questions using AI-powered semantic search and RAG.
 
-**GitHub:** https://github.com/hieudoan7/knowledgehub
+🎥 **[Watch the Demo Video](https://youtu.be/laCUf5llKCs)** — See document upload, AI-powered question answering, and how KnowledgeHub handles questions when the answer isn't in the document.
+
+**GitHub:** [https://github.com/hieudoan7/knowledgehub](https://github.com/hieudoan7/knowledgehub)
 
 KnowledgeHub is deployed as a full-stack application with a React frontend, FastAPI backend, PostgreSQL + pgvector, background document processing, HTTPS, and CI/CD.
 
