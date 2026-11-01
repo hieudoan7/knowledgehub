@@ -24,7 +24,11 @@ class Settings(BaseSettings):
     # Database
     # ------------------------------------------------------------------
 
-    DATABASE_URL: str
+    DB_HOST: str
+    DB_PORT: int = 5432
+    DB_NAME: str = "knowledgehub"
+    DB_APP_SECRET: str
+    RDS_CA_CERT: str = "/app/certs/global-bundle.pem"
 
     # ------------------------------------------------------------------
     # Authentication
