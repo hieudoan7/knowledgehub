@@ -173,6 +173,14 @@ def configure_database(admin_username, app_password, migrator_password):
 
             # Automatically grant app permissions on future migration objects.
             cursor.execute(
+                sql.SQL("GRANT {} TO {}").format(
+                    sql.Identifier(MIGRATOR_USER),
+                    sql.Identifier(admin_username),
+                )
+            )
+
+            # Automatically grant app permissions on future migration objects.
+            cursor.execute(
                 sql.SQL(
                     "ALTER DEFAULT PRIVILEGES FOR ROLE {} IN SCHEMA public "
                     "GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {}"

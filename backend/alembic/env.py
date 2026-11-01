@@ -1,17 +1,23 @@
 import json
+import os
 from logging.config import fileConfig
+from pathlib import Path
 
 import boto3
 from alembic import context
-from sqlalchemy import create_engine
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, pool
 from sqlalchemy.engine import URL
-from sqlalchemy import pool
 
-from app.core.config import settings
 from app.db.base import Base
 import app.models
 
 
+# Load migration-specific environment variables.
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BACKEND_DIR / ".env.migrator")
+
+# Alembic configuration.
 config = context.config
 
 if config.config_file_name is not None:
@@ -22,13 +28,17 @@ target_metadata = Base.metadata
 
 def get_database_url():
     """Retrieve migrator credentials from AWS Secrets Manager."""
+
+    region = os.environ["AWS_REGION"]
+    secret_name = os.environ["DB_MIGRATOR_SECRET"]
+
     client = boto3.client(
         "secretsmanager",
-        region_name=settings.AWS_REGION,
+        region_name=region,
     )
 
     response = client.get_secret_value(
-        SecretId=settings.DB_MIGRATOR_SECRET,
+        SecretId=secret_name,
     )
 
     credentials = json.loads(response["SecretString"])
@@ -37,12 +47,12 @@ def get_database_url():
         drivername="postgresql+psycopg",
         username=credentials["username"],
         password=credentials["password"],
-        host=settings.DB_HOST,
-        port=settings.DB_PORT,
-        database=settings.DB_NAME,
+        host=os.environ["DB_HOST"],
+        port=int(os.getenv("DB_PORT", "5432")),
+        database=os.environ["DB_NAME"],
         query={
             "sslmode": "verify-full",
-            "sslrootcert": settings.RDS_CA_CERT,
+            "sslrootcert": os.environ["RDS_CA_CERT"],
         },
     )
 
@@ -67,16 +77,17 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
 
-    with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-        )
+    try:
+        with connectable.connect() as connection:
+            context.configure(
+                connection=connection,
+                target_metadata=target_metadata,
+            )
 
-        with context.begin_transaction():
-            context.run_migrations()
-
-    connectable.dispose()
+            with context.begin_transaction():
+                context.run_migrations()
+    finally:
+        connectable.dispose()
 
 
 if context.is_offline_mode():
